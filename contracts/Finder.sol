@@ -229,15 +229,15 @@ contract Marketplace {
             revert Marketplace__OfferAlreadyAccepted();
         }
 
-        offer.isAccepted = true;
-        offer.updatedAt = block.timestamp;
-
         Request memory request = requests[offer.requestId];
         for (int i = 0; i < request.sellerIds.length; i++) {
             string memory previousSellerId = request.sellerIds[i];
             Offer storage previousOffer = offers[previousSellerId];
             previousOffer.isAccepted = false;
         }
+
+        offer.isAccepted = true;
+        offer.updatedAt = block.timestamp;
         request.sellerIds.push(offer.sellerId);
         request.lockedSellerId = offer.sellerId;
         request.sellersPriceQuote = offer.price;
