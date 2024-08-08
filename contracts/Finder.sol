@@ -108,7 +108,7 @@ contract Marketplace {
     mapping(string => Request) public requests;
     mapping(string => Offer) public offers;
 
-    uint256 constant FIFTEEN_MINUTES = 900;
+    uint256 constant TIME_TO_LOCK = 900;
 
     function createUser(
         string memory _id,
@@ -244,7 +244,7 @@ contract Marketplace {
             revert Marketplace__UnauthorizedRemoval();
         }
 
-        if (block.timestamp > offer.updatedAt + FIFTEEN_MINUTES) {
+        if (block.timestamp > offer.updatedAt + TIME_TO_LOCK) {
             revert Marketplace__OfferNotRemovable();
         }
 
