@@ -107,6 +107,7 @@ contract Marketplace {
     mapping(address => User) public users;
     mapping(string => Request) public requests;
     mapping(string => Offer) public offers;
+    mapping(address => mapping(string => bool)) public buyerOffers; // Tracks offers created by each buyer for each request
 
     uint256 constant TIME_TO_LOCK = 900;
 
@@ -201,6 +202,10 @@ contract Marketplace {
             revert Marketplace__OnlySellersAllowed();
         }
 
+        if (buyerOffers[msg.sender][_requestId]) {
+            revert Marketplace__OfferAlreadyExists();
+        }
+
         Offer memory newOffer = Offer(
             _id,
             _price,
@@ -213,6 +218,8 @@ contract Marketplace {
             block.timestamp
         );
         offers[_id] = newOffer;
+        buyerOffers[msg.sender][_requestId] = true; // Mark that the buyer has created an offer for this request
+
         emit OfferCreated(_id, msg.sender, _storeName, _price, _requestId);
     }
 
@@ -227,8 +234,9 @@ contract Marketplace {
 
         Request memory request = requests[offer.requestId];
         for (int i = 0; i < request.sellerIds.length; i++) {
-            Offer memory offer = offers[_offerId];
-            offer.isAccepted = false;
+            string memory previousSellerId = request.sellerIds[i];
+            Offer storage previousOffer = offers[previousSellerId];
+            previousOffer.isAccepted = false;
         }
         request.sellerIds.push(offer.sellerId);
         request.lockedSellerId = offer.sellerId;
@@ -255,6 +263,7 @@ contract Marketplace {
 
         // Delete the offer
         delete offers[_offerId];
+        buyerOffers[msg.sender][offer.requestId] = false; // Allow buyer to create another offer for the same request
 
         // Emit the event
         emit OfferRemoved(_offerId, msg.sender);
