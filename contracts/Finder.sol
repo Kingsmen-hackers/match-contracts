@@ -108,6 +108,8 @@ contract Marketplace {
     mapping(string => Request) public requests;
     mapping(string => Offer) public offers;
 
+    uint256 constant FIFTEEN_MINUTES = 900;
+
     function createUser(
         string memory _id,
         string memory _username,
@@ -242,9 +244,7 @@ contract Marketplace {
             revert Marketplace__UnauthorizedRemoval();
         }
 
-        // Check if the offer is within 30 minutes (1800 seconds) of the last update
-        if (block.timestamp > offer.updatedAt + 1800) {
-            // 1800 seconds = 30 minutes
+        if (block.timestamp > offer.updatedAt + FIFTEEN_MINUTES) {
             revert Marketplace__OfferNotRemovable();
         }
 
