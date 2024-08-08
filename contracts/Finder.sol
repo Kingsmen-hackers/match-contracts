@@ -15,9 +15,8 @@ contract Marketplace {
     }
 
     struct Location {
-        string state;
-        string lga;
-        string market;
+        int256 latitude;
+        int256 longitude;
     }
 
     struct Store {
@@ -48,9 +47,7 @@ contract Marketplace {
         string[] images;
         uint256 createdAt;
         RequestLifecycle lifecycle;
-        string market;
-        string lga;
-        string state;
+        Location location;
         uint256 updatedAt;
     }
 
@@ -81,9 +78,8 @@ contract Marketplace {
         string memory _username,
         string memory _email,
         string memory _phone,
-        string memory _state,
-        string memory _lga,
-        string memory _market,
+        int256 _latitude,
+        int256 _longitude,
         AccountType _accountType
     ) public {
         if (
@@ -93,7 +89,7 @@ contract Marketplace {
             revert Marketplace__InvalidAccountType();
         }
 
-        Location memory userLocation = Location(_state, _lga, _market);
+        Location memory userLocation = Location(_latitude, _longitude);
         User memory newUser = User(
             _id,
             _username,
@@ -110,15 +106,14 @@ contract Marketplace {
     function createStore(
         string memory _name,
         string memory _description,
-        string memory _state,
-        string memory _lga,
-        string memory _market
+        int256 _latitude,
+        int256 _longitude
     ) public {
         if (users[msg.sender].accountType != AccountType.SELLER) {
             revert Marketplace__OnlySellersAllowed();
         }
 
-        Location memory storeLocation = Location(_state, _lga, _market);
+        Location memory storeLocation = Location(_latitude, _longitude);
         Store memory newStore = Store(_name, _description, storeLocation);
         users[msg.sender].stores.push(newStore);
     }
@@ -129,14 +124,14 @@ contract Marketplace {
         string memory _buyerId,
         string memory _description,
         string[] memory _images,
-        string memory _market,
-        string memory _lga,
-        string memory _state
+        int256 _latitude,
+        int256 _longitude
     ) public {
         if (users[msg.sender].accountType != AccountType.BUYER) {
             revert Marketplace__OnlyBuyersAllowed();
         }
 
+        Location memory requestLocation = Location(_latitude, _longitude);
         Request memory newRequest = Request(
             _id,
             _name,
@@ -147,9 +142,7 @@ contract Marketplace {
             _images,
             block.timestamp,
             RequestLifecycle.PENDING,
-            _market,
-            _lga,
-            _state,
+            requestLocation,
             block.timestamp
         );
         requests[_id] = newRequest;
