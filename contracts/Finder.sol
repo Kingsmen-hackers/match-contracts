@@ -2,6 +2,39 @@
 pragma solidity ^0.8.0;
 
 contract Marketplace {
+    event UserCreated(
+        address indexed userAddress,
+        string userId,
+        string username,
+        uint8 accountType
+    );
+    event StoreCreated(
+        address indexed sellerAddress,
+        string storeName,
+        uint256 latitude,
+        uint256 longitude
+    );
+    event RequestCreated(
+        string indexed requestId,
+        address indexed buyerAddress,
+        string requestName,
+        uint256 latitude,
+        uint256 longitude
+    );
+    event OfferCreated(
+        string indexed offerId,
+        address indexed sellerAddress,
+        string storeName,
+        uint256 price,
+        string requestId
+    );
+
+    event RequestAccepted(
+        string indexed requestId,
+        string indexed offerId,
+        address indexed sellerAddress
+    );
+
     enum AccountType {
         BUYER,
         SELLER
@@ -15,8 +48,8 @@ contract Marketplace {
     }
 
     struct Location {
-        int256 latitude;
-        int256 longitude;
+        uint256 latitude;
+        uint256 longitude;
     }
 
     struct Store {
@@ -78,8 +111,8 @@ contract Marketplace {
         string memory _username,
         string memory _email,
         string memory _phone,
-        int256 _latitude,
-        int256 _longitude,
+        uint256 _latitude,
+        uint256 _longitude,
         AccountType _accountType
     ) public {
         if (
@@ -98,16 +131,17 @@ contract Marketplace {
             userLocation,
             block.timestamp,
             _accountType,
-            new Store[]()
+            new Store[](0)
         );
         users[msg.sender] = newUser;
+        emit UserCreated(msg.sender, _id, _username, uint8(_accountType));
     }
 
     function createStore(
         string memory _name,
         string memory _description,
-        int256 _latitude,
-        int256 _longitude
+        uint256 _latitude,
+        uint256 _longitude
     ) public {
         if (users[msg.sender].accountType != AccountType.SELLER) {
             revert Marketplace__OnlySellersAllowed();
@@ -116,6 +150,7 @@ contract Marketplace {
         Location memory storeLocation = Location(_latitude, _longitude);
         Store memory newStore = Store(_name, _description, storeLocation);
         users[msg.sender].stores.push(newStore);
+        emit StoreCreated(msg.sender, _name, _latitude, _longitude);
     }
 
     function createRequest(
@@ -124,8 +159,8 @@ contract Marketplace {
         string memory _buyerId,
         string memory _description,
         string[] memory _images,
-        int256 _latitude,
-        int256 _longitude
+        uint256 _latitude,
+        uint256 _longitude
     ) public {
         if (users[msg.sender].accountType != AccountType.BUYER) {
             revert Marketplace__OnlyBuyersAllowed();
@@ -137,7 +172,8 @@ contract Marketplace {
             _name,
             _buyerId,
             0,
-            new string,
+            new string[](0),
+            "",
             _description,
             _images,
             block.timestamp,
@@ -146,6 +182,7 @@ contract Marketplace {
             block.timestamp
         );
         requests[_id] = newRequest;
+        emit RequestCreated(_id, msg.sender, _name, _latitude, _longitude);
     }
 
     function createOffer(
@@ -172,10 +209,11 @@ contract Marketplace {
             block.timestamp
         );
         offers[_id] = newOffer;
+        emit OfferCreated(_id, msg.sender, _storeName, _price, _requestId);
     }
 
     function acceptOffer(string memory _offerId) public {
-        Offer storage offer = offers[_offerId];
+        Offer memory offer = offers[_offerId];
         if (offer.isAccepted) {
             revert Marketplace__OfferAlreadyAccepted();
         }
@@ -183,10 +221,11 @@ contract Marketplace {
         offer.isAccepted = true;
         offer.updatedAt = block.timestamp;
 
-        Request storage request = requests[offer.requestId];
+        Request memory request = requests[offer.requestId];
         request.lockedSellerId = offer.sellerId;
         request.sellersPriceQuote = offer.price;
         request.lifecycle = RequestLifecycle.ACCEPTED_BY_SELLER;
         request.updatedAt = block.timestamp;
+        emit RequestAccepted(request.id, offer.id, offer.sellerId);
     }
 }
