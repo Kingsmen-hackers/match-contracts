@@ -226,6 +226,11 @@ contract Marketplace {
         offer.updatedAt = block.timestamp;
 
         Request memory request = requests[offer.requestId];
+        for (int i = 0; i < request.sellerIds.length; i++) {
+            Offer memory offer = offers[_offerId];
+            offer.isAccepted = false;
+        }
+        request.sellerIds.push(offer.sellerId);
         request.lockedSellerId = offer.sellerId;
         request.sellersPriceQuote = offer.price;
         request.lifecycle = RequestLifecycle.ACCEPTED_BY_SELLER;
