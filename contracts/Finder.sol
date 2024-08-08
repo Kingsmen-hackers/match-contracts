@@ -261,6 +261,9 @@ contract Marketplace {
             revert Marketplace__OfferNotRemovable();
         }
 
+        Request memory request = requests[offer.requestId];
+        request.sellerIds.pop(offer.sellerId);
+
         // Delete the offer
         delete offers[_offerId];
         buyerOffers[msg.sender][offer.requestId] = false; // Allow buyer to create another offer for the same request
