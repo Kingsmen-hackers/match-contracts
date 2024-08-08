@@ -19,10 +19,9 @@ describe("Marketplace", function () {
         "buyerUser",
         "buyer@example.com",
         "123456789",
-        "State1",
-        "LGA1",
-        "Market1",
-        0 // 0 = BUYER
+        10,  // latitude
+        20,  // longitude
+        0    // 0 = BUYER
       );
 
       const user = await marketplace.users(buyer.address);
@@ -36,10 +35,9 @@ describe("Marketplace", function () {
         "sellerUser",
         "seller@example.com",
         "987654321",
-        "State2",
-        "LGA2",
-        "Market2",
-        1 // 1 = SELLER
+        30,  // latitude
+        40,  // longitude
+        1    // 1 = SELLER
       );
 
       const user = await marketplace.users(seller.address);
@@ -54,10 +52,9 @@ describe("Marketplace", function () {
           "invalid",
           "invalid@example.com",
           "000000000",
-          "InvalidState",
-          "InvalidLGA",
-          "InvalidMarket",
-          2 // Invalid account type
+          50,  // latitude
+          60,  // longitude
+          2    // Invalid account type
         )
       ).to.be.revertedWith("Marketplace__InvalidAccountType");
     });
@@ -70,21 +67,21 @@ describe("Marketplace", function () {
         "sellerUser",
         "seller@example.com",
         "987654321",
-        "State2",
-        "LGA2",
-        "Market2",
-        1 // 1 = SELLER
+        30,  // latitude
+        40,  // longitude
+        1    // 1 = SELLER
       );
     });
 
     it("Should allow a seller to create a store", async function () {
-      await marketplace.connect(seller).createStore(
-        "Store1",
-        "This is a test store",
-        "State2",
-        "LGA2",
-        "Market2"
-      );
+      await marketplace
+        .connect(seller)
+        .createStore(
+          "Store1",
+          "This is a test store",
+          30,  // latitude
+          40   // longitude
+        );
 
       const user = await marketplace.users(seller.address);
       expect(user.stores.length).to.equal(1);
@@ -97,20 +94,20 @@ describe("Marketplace", function () {
         "buyerUser",
         "buyer@example.com",
         "123456789",
-        "State1",
-        "LGA1",
-        "Market1",
-        0 // 0 = BUYER
+        10,  // latitude
+        20,  // longitude
+        0    // 0 = BUYER
       );
 
       await expect(
-        marketplace.connect(buyer).createStore(
-          "BuyerStore",
-          "Buyer's store",
-          "State1",
-          "LGA1",
-          "Market1"
-        )
+        marketplace
+          .connect(buyer)
+          .createStore(
+            "BuyerStore",
+            "Buyer's store",
+            10,  // latitude
+            20   // longitude
+          )
       ).to.be.revertedWith("Marketplace__OnlySellersAllowed");
     });
   });
@@ -122,10 +119,9 @@ describe("Marketplace", function () {
         "buyerUser",
         "buyer@example.com",
         "123456789",
-        "State1",
-        "LGA1",
-        "Market1",
-        0 // 0 = BUYER
+        10,  // latitude
+        20,  // longitude
+        0    // 0 = BUYER
       );
 
       await marketplace.connect(seller).createUser(
@@ -133,32 +129,33 @@ describe("Marketplace", function () {
         "sellerUser",
         "seller@example.com",
         "987654321",
-        "State2",
-        "LGA2",
-        "Market2",
-        1 // 1 = SELLER
+        30,  // latitude
+        40,  // longitude
+        1    // 1 = SELLER
       );
 
-      await marketplace.connect(seller).createStore(
-        "Store1",
-        "This is a test store",
-        "State2",
-        "LGA2",
-        "Market2"
-      );
+      await marketplace
+        .connect(seller)
+        .createStore(
+          "Store1",
+          "This is a test store",
+          30,  // latitude
+          40   // longitude
+        );
     });
 
     it("Should allow a buyer to create a request", async function () {
-      await marketplace.connect(buyer).createRequest(
-        "request1",
-        "Need a product",
-        "buyer1",
-        "Looking for a specific product",
-        [],
-        "Market1",
-        "LGA1",
-        "State1"
-      );
+      await marketplace
+        .connect(buyer)
+        .createRequest(
+          "request1",
+          "Need a product",
+          "buyer1",
+          "Looking for a specific product",
+          [],
+          10,  // latitude
+          20   // longitude
+        );
 
       const request = await marketplace.requests("request1");
       expect(request.name).to.equal("Need a product");
@@ -167,65 +164,74 @@ describe("Marketplace", function () {
 
     it("Should revert when a seller tries to create a request", async function () {
       await expect(
-        marketplace.connect(seller).createRequest(
-          "invalidRequest",
-          "Invalid",
-          "seller1",
-          "Invalid request",
-          [],
-          "Market2",
-          "LGA2",
-          "State2"
-        )
+        marketplace
+          .connect(seller)
+          .createRequest(
+            "invalidRequest",
+            "Invalid",
+            "seller1",
+            "Invalid request",
+            [],
+            30,  // latitude
+            40   // longitude
+          )
       ).to.be.revertedWith("Marketplace__OnlyBuyersAllowed");
     });
 
     it("Should allow a seller to create an offer", async function () {
-      await marketplace.connect(buyer).createRequest(
-        "request1",
-        "Need a product",
-        "buyer1",
-        "Looking for a specific product",
-        [],
-        "Market1",
-        "LGA1",
-        "State1"
-      );
+      await marketplace
+        .connect(buyer)
+        .createRequest(
+          "request1",
+          "Need a product",
+          "buyer1",
+          "Looking for a specific product",
+          [],
+          10,  // latitude
+          20   // longitude
+        );
 
-      await marketplace.connect(seller).createOffer(
-        "offer1",
-        ethers.utils.parseEther("1.0"),
-        [],
-        "request1",
-        "Store1",
-        "seller1"
-      );
+      await marketplace
+        .connect(seller)
+        .createOffer(
+          "offer1",
+          ethers.utils.parseEther("1.0"),
+          [],
+          "request1",
+          "Store1",
+          "seller1"
+        );
 
       const offer = await marketplace.offers("offer1");
-      expect(offer.price.toString()).to.equal(ethers.utils.parseEther("1.0").toString());
+      expect(offer.price.toString()).to.equal(
+        ethers.utils.parseEther("1.0").toString()
+      );
       expect(offer.storeName).to.equal("Store1");
     });
 
     it("Should allow a buyer to accept an offer", async function () {
-      await marketplace.connect(buyer).createRequest(
-        "request1",
-        "Need a product",
-        "buyer1",
-        "Looking for a specific product",
-        [],
-        "Market1",
-        "LGA1",
-        "State1"
-      );
+      await marketplace
+        .connect(buyer)
+        .createRequest(
+          "request1",
+          "Need a product",
+          "buyer1",
+          "Looking for a specific product",
+          [],
+          10,  // latitude
+          20   // longitude
+        );
 
-      await marketplace.connect(seller).createOffer(
-        "offer1",
-        ethers.utils.parseEther("1.0"),
-        [],
-        "request1",
-        "Store1",
-        "seller1"
-      );
+      await marketplace
+        .connect(seller)
+        .createOffer(
+          "offer1",
+          ethers.utils.parseEther("1.0"),
+          [],
+          "request1",
+          "Store1",
+          "seller1"
+        );
 
       await marketplace.connect(buyer).acceptOffer("offer1");
 
@@ -234,30 +240,35 @@ describe("Marketplace", function () {
 
       const request = await marketplace.requests("request1");
       expect(request.lockedSellerId).to.equal("seller1");
-      expect(request.sellersPriceQuote.toString()).to.equal(ethers.utils.parseEther("1.0").toString());
+      expect(request.sellersPriceQuote.toString()).to.equal(
+        ethers.utils.parseEther("1.0").toString()
+      );
       expect(request.lifecycle).to.equal(1); // 1 = ACCEPTED_BY_SELLER
     });
 
     it("Should revert when trying to accept an already accepted offer", async function () {
-      await marketplace.connect(buyer).createRequest(
-        "request1",
-        "Need a product",
-        "buyer1",
-        "Looking for a specific product",
-        [],
-        "Market1",
-        "LGA1",
-        "State1"
-      );
+      await marketplace
+        .connect(buyer)
+        .createRequest(
+          "request1",
+          "Need a product",
+          "buyer1",
+          "Looking for a specific product",
+          [],
+          10,  // latitude
+          20   // longitude
+        );
 
-      await marketplace.connect(seller).createOffer(
-        "offer1",
-        ethers.utils.parseEther("1.0"),
-        [],
-        "request1",
-        "Store1",
-        "seller1"
-      );
+      await marketplace
+        .connect(seller)
+        .createOffer(
+          "offer1",
+          ethers.utils.parseEther("1.0"),
+          [],
+          "request1",
+          "Store1",
+          "seller1"
+        );
 
       await marketplace.connect(buyer).acceptOffer("offer1");
 
