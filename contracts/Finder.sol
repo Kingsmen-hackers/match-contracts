@@ -35,6 +35,8 @@ contract Marketplace {
         address indexed sellerAddress
     );
 
+    event OfferRemoved(string indexed offerId, address indexed sellerAddress);
+
     enum AccountType {
         BUYER,
         SELLER
@@ -227,5 +229,29 @@ contract Marketplace {
         request.lifecycle = RequestLifecycle.ACCEPTED_BY_SELLER;
         request.updatedAt = block.timestamp;
         emit RequestAccepted(request.id, offer.id, offer.sellerId);
+    }
+
+    function removeOffer(string memory _offerId) public {
+        Offer storage offer = offers[_offerId];
+
+        // Check if the sender is the seller who created the offer
+        if (
+            keccak256(abi.encodePacked(offer.sellerId)) !=
+            keccak256(abi.encodePacked(users[msg.sender].id))
+        ) {
+            revert Marketplace__UnauthorizedRemoval();
+        }
+
+        // Check if the offer is within 30 minutes (1800 seconds) of the last update
+        if (block.timestamp > offer.updatedAt + 1800) {
+            // 1800 seconds = 30 minutes
+            revert Marketplace__OfferNotRemovable();
+        }
+
+        // Delete the offer
+        delete offers[_offerId];
+
+        // Emit the event
+        emit OfferRemoved(_offerId, msg.sender);
     }
 }
