@@ -63,7 +63,6 @@ contract Marketplace {
     struct User {
         string id;
         string username;
-        string email;
         string phone;
         Location location;
         uint256 createdAt;
@@ -103,6 +102,9 @@ contract Marketplace {
     error Marketplace__OnlyBuyersAllowed();
     error Marketplace__OfferAlreadyAccepted();
     error Marketplace__InvalidAccountType();
+    error Marketplace__OfferAlreadyExists();
+    error Marketplace__UnauthorizedRemoval();
+    error Marketplace__OfferNotRemovable();
 
     mapping(address => User) public users;
     mapping(string => Request) public requests;
@@ -114,7 +116,6 @@ contract Marketplace {
     function createUser(
         string memory _id,
         string memory _username,
-        string memory _email,
         string memory _phone,
         uint256 _latitude,
         uint256 _longitude,
@@ -128,17 +129,16 @@ contract Marketplace {
         }
 
         Location memory userLocation = Location(_latitude, _longitude);
-        User memory newUser = User(
+
+        users[msg.sender] = User(
             _id,
             _username,
-            _email,
             _phone,
             userLocation,
             block.timestamp,
             _accountType,
             new Store[](0)
         );
-        users[msg.sender] = newUser;
         emit UserCreated(msg.sender, _id, _username, uint8(_accountType));
     }
 
@@ -229,8 +229,8 @@ contract Marketplace {
             revert Marketplace__OfferAlreadyAccepted();
         }
 
-        Request memory request = requests[offer.requestId];
-        for (int i = 0; i < request.sellerIds.length; i++) {
+        Request storage request = requests[offer.requestId];
+        for (uint i = 0; i < request.sellerIds.length; i++) {
             string memory previousSellerId = request.sellerIds[i];
             Offer storage previousOffer = offers[previousSellerId];
             previousOffer.isAccepted = false;
@@ -243,7 +243,7 @@ contract Marketplace {
         request.sellersPriceQuote = offer.price;
         request.lifecycle = RequestLifecycle.ACCEPTED_BY_SELLER;
         request.updatedAt = block.timestamp;
-        emit RequestAccepted(request.id, offer.id, offer.sellerId);
+        // emit RequestAccepted(request.id, offer.id, offer.sellerId);
     }
 
     function removeOffer(string memory _offerId) public {
@@ -261,8 +261,32 @@ contract Marketplace {
             revert Marketplace__OfferNotRemovable();
         }
 
-        Request memory request = requests[offer.requestId];
-        request.sellerIds.pop(offer.sellerId);
+        Request storage request = requests[offer.requestId];
+        uint indexToRemove;
+        bool found = false;
+
+        for (uint i = 0; i < request.sellerIds.length; i++) {
+            if (
+                keccak256(abi.encodePacked(request.sellerIds[i])) ==
+                keccak256(abi.encodePacked(offer.sellerId))
+            ) {
+                indexToRemove = i;
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            // Shift all elements after the one to remove left by one position
+            for (
+                uint i = indexToRemove;
+                i < request.sellerIds.length - 1;
+                i++
+            ) {
+                request.sellerIds[i] = request.sellerIds[i + 1];
+            }
+            // Remove the last element (duplicate after shifting)
+            request.sellerIds.pop();
+        }
 
         // Delete the offer
         delete offers[_offerId];
