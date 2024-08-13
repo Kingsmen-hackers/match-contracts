@@ -11,21 +11,21 @@ contract Marketplace {
     event StoreCreated(
         address indexed sellerAddress,
         string storeName,
-        uint256 latitude,
-        uint256 longitude
+        int256 latitude,
+        int256 longitude
     );
     event RequestCreated(
         string indexed requestId,
         address indexed buyerAddress,
         string requestName,
-        uint256 latitude,
-        uint256 longitude
+        int256 latitude,
+        int256 longitude
     );
     event OfferCreated(
         string indexed offerId,
         address indexed sellerAddress,
         string storeName,
-        uint256 price,
+        int256 price,
         string requestId
     );
 
@@ -50,8 +50,8 @@ contract Marketplace {
     }
 
     struct Location {
-        uint256 latitude;
-        uint256 longitude;
+        int256 latitude;
+        int256 longitude;
     }
 
     struct Store {
@@ -76,7 +76,7 @@ contract Marketplace {
         string id;
         string name;
         string buyerId;
-        uint256 sellersPriceQuote;
+        int256 sellersPriceQuote;
         string[] sellerIds;
         string lockedSellerId;
         string description;
@@ -89,7 +89,7 @@ contract Marketplace {
 
     struct Offer {
         string id;
-        uint256 price;
+        int256 price;
         string[] images;
         string requestId;
         string storeName;
@@ -119,8 +119,8 @@ contract Marketplace {
         string memory _id,
         string memory _username,
         string memory _phone,
-        uint256 _latitude,
-        uint256 _longitude,
+        int256 _latitude,
+        int256 _longitude,
         AccountType _accountType
     ) public {
         if (
@@ -148,8 +148,8 @@ contract Marketplace {
         string memory _storeId,
         string memory _name,
         string memory _description,
-        uint256 _latitude,
-        uint256 _longitude
+        int256 _latitude,
+        int256 _longitude
     ) public {
         if (users[msg.sender].accountType != AccountType.SELLER) {
             revert Marketplace__OnlySellersAllowed();
@@ -168,8 +168,8 @@ contract Marketplace {
         string memory _buyerId,
         string memory _description,
         string[] memory _images,
-        uint256 _latitude,
-        uint256 _longitude
+        int256 _latitude,
+        int256 _longitude
     ) public {
         if (users[msg.sender].accountType != AccountType.BUYER) {
             revert Marketplace__OnlyBuyersAllowed();
@@ -196,7 +196,7 @@ contract Marketplace {
 
     function createOffer(
         string memory _id,
-        uint256 _price,
+        int256 _price,
         string[] memory _images,
         string memory _requestId,
         string memory _storeName,
