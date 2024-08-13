@@ -60,6 +60,9 @@ contract Marketplace {
         Location location;
     }
 
+    mapping(address => mapping(string => Store)) public userStores;
+    mapping(address => string[]) public userStoreIds;
+
     struct User {
         string id;
         string username;
@@ -67,7 +70,6 @@ contract Marketplace {
         Location location;
         uint256 createdAt;
         AccountType accountType;
-        Store[] stores;
     }
 
     struct Request {
@@ -136,13 +138,14 @@ contract Marketplace {
             _phone,
             userLocation,
             block.timestamp,
-            _accountType,
-            new Store[](0)
+            _accountType
         );
+
         emit UserCreated(msg.sender, _id, _username, uint8(_accountType));
     }
 
     function createStore(
+        string memory _storeId,
         string memory _name,
         string memory _description,
         uint256 _latitude,
@@ -154,7 +157,8 @@ contract Marketplace {
 
         Location memory storeLocation = Location(_latitude, _longitude);
         Store memory newStore = Store(_name, _description, storeLocation);
-        users[msg.sender].stores.push(newStore);
+        userStores[msg.sender][_storeId] = newStore;
+        userStoreIds[msg.sender].push(_storeId);
         emit StoreCreated(msg.sender, _name, _latitude, _longitude);
     }
 
