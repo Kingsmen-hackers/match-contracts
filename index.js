@@ -9,7 +9,7 @@ const fs = require("fs");
 require("dotenv").config();
 
 const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-const operatorKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
+const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
 
 const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
