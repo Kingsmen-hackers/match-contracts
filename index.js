@@ -45,4 +45,6 @@ const main = async () => {
   console.log(`The contract address is:${contractId} ${contractAddress}`);
 };
 
-main();
+main()
+  .catch(console.error)
+  .then(() => process.exit(0));
