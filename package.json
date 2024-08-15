@@ -8,6 +8,9 @@
     "hardhat": "^2.22.8",
     "hashconnect": "3.0.13"
   },
+  "scripts": {
+    "test": "mocha --require ts-node/register test/**/*.test.ts"
+  },
   "devDependencies": {
     "@hashgraph/sdk": "2.41.0",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
