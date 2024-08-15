@@ -4,38 +4,39 @@ pragma solidity ^0.8.0;
 contract Marketplace {
     event UserCreated(
         address indexed userAddress,
-        string userId,
+        uint256 userId,
         string username,
         uint8 accountType
     );
     event StoreCreated(
         address indexed sellerAddress,
+        uint256 storeId,
         string storeName,
         int256 latitude,
         int256 longitude
     );
     event RequestCreated(
-        string indexed requestId,
+        uint256 indexed requestId,
         address indexed buyerAddress,
         string requestName,
         int256 latitude,
         int256 longitude
     );
     event OfferCreated(
-        string indexed offerId,
+        uint256 indexed offerId,
         address indexed sellerAddress,
         string storeName,
         int256 price,
-        string requestId
+        uint256 requestId
     );
 
     event RequestAccepted(
-        string indexed requestId,
-        string indexed offerId,
-        address indexed sellerAddress
+        uint256 indexed requestId,
+        uint256 indexed offerId,
+        uint256 indexed sellerId
     );
 
-    event OfferRemoved(string indexed offerId, address indexed sellerAddress);
+    event OfferRemoved(uint256 indexed offerId, address indexed sellerAddress);
 
     enum AccountType {
         BUYER,
@@ -55,16 +56,17 @@ contract Marketplace {
     }
 
     struct Store {
+        uint256 id;
         string name;
         string description;
         Location location;
     }
 
-    mapping(address => mapping(string => Store)) public userStores;
-    mapping(address => string[]) public userStoreIds;
+    mapping(address => mapping(uint256 => Store)) public userStores;
+    mapping(address => uint256[]) public userStoreIds;
 
     struct User {
-        string id;
+        uint256 id;
         string username;
         string phone;
         Location location;
@@ -73,12 +75,12 @@ contract Marketplace {
     }
 
     struct Request {
-        string id;
+        uint256 id;
         string name;
-        string buyerId;
+        uint256 buyerId;
         int256 sellersPriceQuote;
-        string[] sellerIds;
-        string lockedSellerId;
+        uint256[] sellerIds;
+        uint256 lockedSellerId;
         string description;
         string[] images;
         uint256 createdAt;
@@ -88,12 +90,12 @@ contract Marketplace {
     }
 
     struct Offer {
-        string id;
+        uint256 id;
         int256 price;
         string[] images;
-        string requestId;
+        uint256 requestId;
         string storeName;
-        string sellerId;
+        uint256 sellerId;
         bool isAccepted;
         uint256 createdAt;
         uint256 updatedAt;
@@ -109,14 +111,18 @@ contract Marketplace {
     error Marketplace__OfferNotRemovable();
 
     mapping(address => User) public users;
-    mapping(string => Request) public requests;
-    mapping(string => Offer) public offers;
-    mapping(address => mapping(string => bool)) public buyerOffers; // Tracks offers created by each buyer for each request
+    mapping(uint256 => Request) public requests;
+    mapping(uint256 => Offer) public offers;
+    mapping(address => mapping(uint256 => bool)) public buyerOffers; // Tracks offers created by each buyer for each request
+
+    uint256 private _userCounter;
+    uint256 private _storeCounter;
+    uint256 private _requestCounter;
+    uint256 private _offerCounter;
 
     uint256 constant TIME_TO_LOCK = 900;
 
     function createUser(
-        string memory _id,
         string memory _username,
         string memory _phone,
         int256 _latitude,
@@ -132,8 +138,11 @@ contract Marketplace {
 
         Location memory userLocation = Location(_latitude, _longitude);
 
+        _userCounter++;
+        uint256 userId = _userCounter;
+
         users[msg.sender] = User(
-            _id,
+            userId,
             _username,
             _phone,
             userLocation,
@@ -141,11 +150,10 @@ contract Marketplace {
             _accountType
         );
 
-        emit UserCreated(msg.sender, _id, _username, uint8(_accountType));
+        emit UserCreated(msg.sender, userId, _username, uint8(_accountType));
     }
 
     function createStore(
-        string memory _storeId,
         string memory _name,
         string memory _description,
         int256 _latitude,
@@ -156,16 +164,23 @@ contract Marketplace {
         }
 
         Location memory storeLocation = Location(_latitude, _longitude);
-        Store memory newStore = Store(_name, _description, storeLocation);
-        userStores[msg.sender][_storeId] = newStore;
-        userStoreIds[msg.sender].push(_storeId);
-        emit StoreCreated(msg.sender, _name, _latitude, _longitude);
+
+        _storeCounter++;
+        uint256 storeId = _storeCounter;
+
+        Store memory newStore = Store(
+            storeId,
+            _name,
+            _description,
+            storeLocation
+        );
+        userStores[msg.sender][storeId] = newStore;
+        userStoreIds[msg.sender].push(storeId);
+        emit StoreCreated(msg.sender, storeId, _name, _latitude, _longitude);
     }
 
     function createRequest(
-        string memory _id,
         string memory _name,
-        string memory _buyerId,
         string memory _description,
         string[] memory _images,
         int256 _latitude,
@@ -176,13 +191,17 @@ contract Marketplace {
         }
 
         Location memory requestLocation = Location(_latitude, _longitude);
+
+        _requestCounter++;
+        uint256 requestId = _requestCounter;
+
         Request memory newRequest = Request(
-            _id,
+            requestId,
             _name,
-            _buyerId,
+            users[msg.sender].id,
             0,
-            new string[](0),
-            "",
+            new uint256[](0),
+            0,
             _description,
             _images,
             block.timestamp,
@@ -190,17 +209,21 @@ contract Marketplace {
             requestLocation,
             block.timestamp
         );
-        requests[_id] = newRequest;
-        emit RequestCreated(_id, msg.sender, _name, _latitude, _longitude);
+        requests[requestId] = newRequest;
+        emit RequestCreated(
+            requestId,
+            msg.sender,
+            _name,
+            _latitude,
+            _longitude
+        );
     }
 
     function createOffer(
-        string memory _id,
         int256 _price,
         string[] memory _images,
-        string memory _requestId,
-        string memory _storeName,
-        string memory _sellerId
+        uint256 _requestId,
+        string memory _storeName
     ) public {
         if (users[msg.sender].accountType != AccountType.SELLER) {
             revert Marketplace__OnlySellersAllowed();
@@ -210,32 +233,35 @@ contract Marketplace {
             revert Marketplace__OfferAlreadyExists();
         }
 
+        _offerCounter++;
+        uint256 offerId = _offerCounter;
+
         Offer memory newOffer = Offer(
-            _id,
+            offerId,
             _price,
             _images,
             _requestId,
             _storeName,
-            _sellerId,
+            users[msg.sender].id,
             false,
             block.timestamp,
             block.timestamp
         );
-        offers[_id] = newOffer;
+        offers[offerId] = newOffer;
         buyerOffers[msg.sender][_requestId] = true; // Mark that the buyer has created an offer for this request
 
-        emit OfferCreated(_id, msg.sender, _storeName, _price, _requestId);
+        emit OfferCreated(offerId, msg.sender, _storeName, _price, _requestId);
     }
 
-    function acceptOffer(string memory _offerId) public {
-        Offer memory offer = offers[_offerId];
+    function acceptOffer(uint256 _offerId) public {
+        Offer storage offer = offers[_offerId];
         if (offer.isAccepted) {
             revert Marketplace__OfferAlreadyAccepted();
         }
 
         Request storage request = requests[offer.requestId];
         for (uint i = 0; i < request.sellerIds.length; i++) {
-            string memory previousSellerId = request.sellerIds[i];
+            uint256 previousSellerId = request.sellerIds[i];
             Offer storage previousOffer = offers[previousSellerId];
             previousOffer.isAccepted = false;
         }
@@ -247,17 +273,15 @@ contract Marketplace {
         request.sellersPriceQuote = offer.price;
         request.lifecycle = RequestLifecycle.ACCEPTED_BY_SELLER;
         request.updatedAt = block.timestamp;
-        // emit RequestAccepted(request.id, offer.id, offer.sellerId);
+
+        emit RequestAccepted(request.id, offer.id, offer.sellerId);
     }
 
-    function removeOffer(string memory _offerId) public {
+    function removeOffer(uint256 _offerId) public {
         Offer storage offer = offers[_offerId];
 
         // Check if the sender is the seller who created the offer
-        if (
-            keccak256(abi.encodePacked(offer.sellerId)) !=
-            keccak256(abi.encodePacked(users[msg.sender].id))
-        ) {
+        if (offer.sellerId != users[msg.sender].id) {
             revert Marketplace__UnauthorizedRemoval();
         }
 
@@ -270,10 +294,7 @@ contract Marketplace {
         bool found = false;
 
         for (uint i = 0; i < request.sellerIds.length; i++) {
-            if (
-                keccak256(abi.encodePacked(request.sellerIds[i])) ==
-                keccak256(abi.encodePacked(offer.sellerId))
-            ) {
+            if (request.sellerIds[i] == offer.sellerId) {
                 indexToRemove = i;
                 found = true;
                 break;
