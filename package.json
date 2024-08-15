@@ -5,7 +5,8 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "hardhat": "^2.22.8"
+    "hardhat": "^2.22.8",
+    "hashconnect": "3.0.13"
   },
   "devDependencies": {
     "@hashgraph/sdk": "2.41.0",
@@ -21,7 +22,7 @@
     "@types/chai": "^4.2.0",
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=18.0.0",
-    "chai": "^4.2.0",
+    "chai": "^5.1.1",
     "ethers": "^6.4.0",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.0",
