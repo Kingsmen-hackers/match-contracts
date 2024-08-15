@@ -4,14 +4,16 @@ const {
   Client,
   ContractCreateTransaction,
   PrivateKey,
+  FileAppendTransaction,
+  Hbar,
 } = require("@hashgraph/sdk");
 const fs = require("fs");
 require("dotenv").config();
 
 const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
+const adminKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
 
-const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+const client = Client.forTestnet().setOperator(operatorId, adminKey);
 
 const main = async () => {
   const info = fs.readFileSync(
@@ -19,30 +21,34 @@ const main = async () => {
     "utf-8"
   );
 
-  const bytes = JSON.parse(info).bytecode;
-  const fileCreateTx = new FileCreateTransaction()
-    .setContents(bytes)
-    .setKeys([operatorKey])
-    .freezeWith(client);
+  const bytecode = JSON.parse(info).bytecode;
+  const fileCreateTx = await new FileCreateTransaction()
+    .setKeys([adminKey])
+    .execute(client);
+  const fileCreateRx = await fileCreateTx.getReceipt(client);
+  const bytecodeFileId = fileCreateRx.fileId;
+  console.log(`- The smart contract bytecode file ID is: ${bytecodeFileId}`);
 
-  const fileCreateSign = await fileCreateTx.sign(operatorKey);
-  const fileCreateSub = await fileCreateSign.execute(client);
-  const fileCreateRx = await fileCreateSub.getReceipt(client);
-  const byteCodeFileId = fileCreateRx.fileId;
+  // Append contents to the file
+  const fileAppendTx = await new FileAppendTransaction()
+    .setFileId(bytecodeFileId)
+    .setContents(bytecode)
+    .setMaxChunks(10)
+    .setMaxTransactionFee(new Hbar(2))
+    .execute(client);
+  await fileAppendTx.getReceipt(client);
+  console.log(`- Content added`);
 
-  console.log(`The byte code file id is: ${byteCodeFileId}`);
+  console.log(`\nSTEP 2 - Create contract`);
+  const contractCreateTx = await new ContractCreateTransaction()
+    .setAdminKey(adminKey)
+    .setBytecodeFileId(bytecodeFileId)
+    .setGas(100000)
+    .execute(client);
 
-  const contractInstantiateTx = new ContractCreateTransaction()
-    .setBytecodeFileId(byteCodeFileId)
-    .setGas(100000);
-  const contractInstantiateSubmit = await contractInstantiateTx.execute(client);
-  const contractInstantiateReceipt = await contractInstantiateSubmit.getReceipt(
-    client
-  );
-  const contractId = contractInstantiateReceipt.contractId;
-  const contractAddress = contractId.toSolidityAddress();
-
-  console.log(`The contract address is:${contractId} ${contractAddress}`);
+  const contractCreateRx = await contractCreateTx.getReceipt(client);
+  const contractId = contractCreateRx.contractId.toString();
+  console.log(`- Contract created ${contractId}`);
 };
 
 main()
