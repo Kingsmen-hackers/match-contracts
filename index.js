@@ -42,7 +42,7 @@ const main = async () => {
   const contractCreateTx = await new ContractCreateTransaction()
     .setAdminKey(adminKey)
     .setBytecodeFileId(bytecodeFileId)
-    .setGas(100000)
+    .setGas(1000000)
     .execute(client);
 
   const contractCreateRx = await contractCreateTx.getReceipt(client);
