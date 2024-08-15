@@ -34,7 +34,6 @@ const main = async () => {
     .setFileId(bytecodeFileId)
     .setContents(bytecode)
     .setMaxChunks(10)
-    .setMaxTransactionFee(new Hbar(2))
     .execute(client);
   await fileAppendTx.getReceipt(client);
   console.log(`- Content added`);
