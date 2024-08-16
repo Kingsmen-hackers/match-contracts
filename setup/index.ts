@@ -30,12 +30,12 @@ const CONTRACT_ID = "0.0.4685013";
 let hashconnect: HashConnect;
 let state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
 let pairingData: SessionData | null;
-
+const env = "testnet";
 const PROJECT_ID = "73801621aec60dfaa2197c7640c15858";
 const DEBUG = true;
 export async function connectToHashConnect() {
   hashconnect = new HashConnect(
-    LedgerId.TESTNET,
+    LedgerId.fromString(env),
     PROJECT_ID,
     appMetaData,
     DEBUG
