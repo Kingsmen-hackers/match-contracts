@@ -75,7 +75,6 @@ export async function createStore(name, description, latitude, longitude) {
 
 export async function createRequest(
   name,
-  buyerId,
   description,
   images,
   latitude,
@@ -84,7 +83,6 @@ export async function createRequest(
   try {
     const params = new ContractFunctionParameters();
     params.addString(name);
-    params.addString(buyerId);
     params.addString(description);
     params.addStringArray(images);
     params.addInt256(latitude);

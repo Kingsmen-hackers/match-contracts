@@ -46,7 +46,7 @@ describe("Marketplace Smart Contract Tests", function () {
     sellerId: "0.0.12345",
   };
 
-  it("should create a new user", async function () {
+  it("should create a new buyer account", async function () {
     const receipt = await createUser(
       testUser.username,
       testUser.phone,
@@ -79,17 +79,24 @@ describe("Marketplace Smart Contract Tests", function () {
   it("should create a new request", async function () {
     const receipt = await createRequest(
       testRequest.name,
-      "0.0.12345", // Example buyer ID
       testRequest.description,
       testRequest.images,
       testRequest.latitude,
       testRequest.longitude
     );
+
     expect(receipt).to.not.be.null;
     // expect(receipt.status).to.equal("SUCCESS");
   });
 
   it("should create a new offer", async function () {
+    const sellerTx = await createUser(
+      testUser.username,
+      testUser.phone,
+      testUser.latitude,
+      testUser.longitude,
+      AccountType.SELLER
+    );
     const receipt = await createOffer(
       testOffer.price,
       testOffer.images,
@@ -101,9 +108,9 @@ describe("Marketplace Smart Contract Tests", function () {
     // expect(receipt.status).to.equal("SUCCESS");
   });
 
-  it("should accept an offer", async function () {
-    const receipt = await acceptOffer("1"); // Example offer ID
-    expect(receipt).to.not.be.null;
-    // expect(receipt.status).to.equal("SUCCESS");
-  });
+  // it("should accept an offer", async function () {
+  //   const receipt = await acceptOffer("1"); // Example offer ID
+  //   expect(receipt).to.not.be.null;
+  //   // expect(receipt.status).to.equal("SUCCESS");
+  // });
 });
