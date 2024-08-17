@@ -25,7 +25,7 @@ const appMetaData = {
   url: window.location.origin,
 };
 
-const CONTRACT_ID = "0.0.4685013";
+const CONTRACT_ID = "0.0.4686833";
 
 const env = "testnet";
 const PROJECT_ID = "73801621aec60dfaa2197c7640c15858";
