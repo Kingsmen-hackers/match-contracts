@@ -1,6 +1,6 @@
-const { expect } = require("chai");
+import { expect } from "chai";
 
-const {
+import {
   acceptOffer,
   AccountType,
   createOffer,
@@ -8,7 +8,7 @@ const {
   createStore,
   createUser,
   removeOffer,
-} = require("../setup");
+} from "../setup/index.js";
 
 describe("Marketplace Smart Contract Tests", function () {
   // Sample user data

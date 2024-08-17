@@ -1,4 +1,4 @@
-const {
+import {
   AccountId,
   ContractExecuteTransaction,
   ContractFunctionParameters,
@@ -7,35 +7,23 @@ const {
   LedgerId,
   PrivateKey,
   Client,
-} = require("@hashgraph/sdk");
+} from "@hashgraph/sdk";
 
-require("dotenv").config();
+import "dotenv/config";
 
-const AccountType = {
+export const AccountType = {
   BUYER: 0,
   SELLER: 1,
 };
 
-const appMetaData = {
-  name: "Finder",
-  description:
-    "Finder is a blockchain application that allows buyers to find the best deals on products they want to buy.",
-  icons: [window.location.origin + "/favicon.ico"],
-  url: window.location.origin,
-};
-
 const CONTRACT_ID = "0.0.4686833";
-
-const env = "testnet";
-const PROJECT_ID = "73801621aec60dfaa2197c7640c15858";
-const DEBUG = true;
 
 const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 const adminKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
 
 const client = Client.forTestnet().setOperator(operatorId, adminKey);
 
-async function createUser(username, phone, lat, long, account_type) {
+export async function createUser(username, phone, lat, long, account_type) {
   try {
     const params = new ContractFunctionParameters();
     params.addString(username);
@@ -56,7 +44,7 @@ async function createUser(username, phone, lat, long, account_type) {
   }
 }
 
-async function createStore(name, description, latitude, longitude) {
+export async function createStore(name, description, latitude, longitude) {
   try {
     const params = new ContractFunctionParameters();
     params.addString(name);
@@ -76,7 +64,7 @@ async function createStore(name, description, latitude, longitude) {
   }
 }
 
-async function createRequest(
+export async function createRequest(
   name,
   buyerId,
   description,
@@ -105,7 +93,13 @@ async function createRequest(
   }
 }
 
-async function createOffer(price, images, requestId, storeName, sellerId) {
+export async function createOffer(
+  price,
+  images,
+  requestId,
+  storeName,
+  sellerId
+) {
   try {
     const params = new ContractFunctionParameters();
     params.addInt256(price);
@@ -126,7 +120,7 @@ async function createOffer(price, images, requestId, storeName, sellerId) {
   }
 }
 
-async function acceptOffer(offerId) {
+export async function acceptOffer(offerId) {
   try {
     const params = new ContractFunctionParameters();
     params.addString(offerId);
@@ -143,7 +137,7 @@ async function acceptOffer(offerId) {
   }
 }
 
-async function removeOffer(offerId) {
+export async function removeOffer(offerId) {
   try {
     const params = new ContractFunctionParameters();
     params.addAddress(offerId);
@@ -159,13 +153,3 @@ async function removeOffer(offerId) {
     console.error(error);
   }
 }
-
-module.exports = {
-  createUser,
-  createStore,
-  createRequest,
-  createOffer,
-  acceptOffer,
-  removeOffer,
-  AccountType,
-};
