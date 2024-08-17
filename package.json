@@ -5,7 +5,8 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "hardhat": "^2.22.8"
+    "hardhat": "^2.22.8",
+    "ethers": "^6.13.2"
   },
   "type": "module",
   "scripts": {

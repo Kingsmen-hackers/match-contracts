@@ -9,6 +9,10 @@ import {
   Client,
 } from "@hashgraph/sdk";
 
+import { ethers } from "ethers";
+
+import { marketAbi } from "./abi.js";
+
 import "dotenv/config";
 
 export const AccountType = {
@@ -18,10 +22,15 @@ export const AccountType = {
 
 const CONTRACT_ID = "0.0.4686833";
 
-const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
+export const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 const adminKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
 
 const client = Client.forTestnet().setOperator(operatorId, adminKey);
+
+const HEDERA_JSON_RPC = {
+  mainnet: "https://mainnet.hashio.io/api",
+  testnet: "https://testnet.hashio.io/api",
+};
 
 export async function createUser(username, phone, lat, long, account_type) {
   try {
@@ -152,4 +161,27 @@ export async function removeOffer(offerId) {
   } catch (error) {
     console.error(error);
   }
+}
+
+export async function getEvmAddress(account_id) {
+  const url = `https://testnet.mirrornode.hedera.com/api/v1/accounts/${account_id}?limit=1`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data?.evm_address;
+}
+
+export function getContract() {
+  const contractAddress = AccountId.fromString(CONTRACT_ID).toSolidityAddress();
+  const provider = new ethers.JsonRpcProvider(HEDERA_JSON_RPC.testnet);
+
+  return new ethers.Contract(`0x${contractAddress}`, marketAbi, provider);
+}
+
+export async function fetchUser(account_id) {
+  const contract = getContract();
+  const userAddress = await getEvmAddress(account_id);
+
+  const user = await contract.users(userAddress);
+
+  return user;
 }
