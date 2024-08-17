@@ -5,13 +5,13 @@ import {
   ContractId,
   Hbar,
   LedgerId,
-  TransactionReceipt,
+  PrivateKey,
+  Client,
+  TransactionResponse,
 } from "@hashgraph/sdk";
-import {
-  HashConnect,
-  HashConnectConnectionState,
-  SessionData,
-} from "hashconnect";
+
+import "dotenv/config";
+
 export enum AccountType {
   BUYER = "buyer",
   SELLER = "seller",
@@ -27,46 +27,14 @@ const appMetaData = {
 
 const CONTRACT_ID = "0.0.4685013";
 
-let hashconnect: HashConnect;
-let state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
-let pairingData: SessionData | null;
 const env = "testnet";
 const PROJECT_ID = "73801621aec60dfaa2197c7640c15858";
 const DEBUG = true;
-export async function connectToHashConnect() {
-  hashconnect = new HashConnect(
-    LedgerId.fromString(env),
-    PROJECT_ID,
-    appMetaData,
-    DEBUG
-  );
-  setUpHashConnectEvents();
 
-  await hashconnect.init();
-}
+const operatorId = AccountId.fromString(process.env.OPERATOR_ID!);
+const adminKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY!);
 
-async function openPairing() {
-  hashconnect.openPairingModal();
-}
-
-async function disconnect() {
-  hashconnect.disconnect();
-  pairingData = null;
-}
-
-async function setUpHashConnectEvents() {
-  hashconnect.pairingEvent.on((newPairing) => {
-    pairingData = newPairing;
-  });
-
-  hashconnect.disconnectionEvent.on((data) => {
-    pairingData = null;
-  });
-
-  hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
-    state = connectionStatus;
-  });
-}
+const client = Client.forTestnet().setOperator(operatorId, adminKey);
 
 export async function createUser(
   username: string,
@@ -74,12 +42,8 @@ export async function createUser(
   lat: number,
   long: number,
   account_type: AccountType
-): Promise<TransactionReceipt | undefined> {
-  if (pairingData === null) return;
-
+): Promise<TransactionResponse | undefined> {
   try {
-    let accountId = AccountId.fromString(pairingData!.accountIds[0]);
-
     const params = new ContractFunctionParameters();
 
     params.addString(username);
@@ -92,8 +56,8 @@ export async function createUser(
       .setGas(1000000)
       .setFunction("createUser", params);
 
-    const receipt = await hashconnect.sendTransaction(accountId, transaction);
-    return receipt;
+    const contractExecSubmit = await transaction.execute(client);
+    return contractExecSubmit;
   } catch (error) {
     console.error(error);
   }
@@ -104,12 +68,8 @@ export async function createStore(
   description: string,
   latitude: number,
   longitude: number
-): Promise<TransactionReceipt | undefined> {
-  if (pairingData === null) return;
-
+): Promise<TransactionResponse | undefined> {
   try {
-    let accountId = AccountId.fromString(pairingData!.accountIds[0]);
-
     const params = new ContractFunctionParameters();
     params.addString(name);
     params.addString(description);
@@ -120,8 +80,8 @@ export async function createStore(
       .setGas(1000000)
       .setFunction("createStore", params);
 
-    const receipt = await hashconnect.sendTransaction(accountId, transaction);
-    return receipt;
+    const contractExecSubmit = await transaction.execute(client);
+    return contractExecSubmit;
   } catch (error) {
     console.error(error);
   }
@@ -134,12 +94,8 @@ export async function createRequest(
   images: string[],
   latitude: number,
   longitude: number
-): Promise<TransactionReceipt | undefined> {
-  if (pairingData === null) return;
-
+): Promise<TransactionResponse | undefined> {
   try {
-    let accountId = AccountId.fromString(pairingData!.accountIds[0]);
-
     const params = new ContractFunctionParameters();
     params.addString(name);
     params.addString(buyerId);
@@ -151,9 +107,8 @@ export async function createRequest(
       .setContractId(ContractId.fromString(CONTRACT_ID))
       .setGas(1000000)
       .setFunction("createRequest", params);
-
-    const receipt = await hashconnect.sendTransaction(accountId, transaction);
-    return receipt;
+    const contractExecSubmit = await transaction.execute(client);
+    return contractExecSubmit;
   } catch (error) {
     console.error(error);
   }
@@ -165,12 +120,8 @@ export async function createOffer(
   requestId: string,
   storeName: string,
   sellerId: string
-): Promise<TransactionReceipt | undefined> {
-  if (pairingData === null) return;
-
+): Promise<TransactionResponse | undefined> {
   try {
-    let accountId = AccountId.fromString(pairingData!.accountIds[0]);
-
     const params = new ContractFunctionParameters();
     params.addInt256(price);
     params.addStringArray(images);
@@ -182,8 +133,8 @@ export async function createOffer(
       .setGas(1000000)
       .setFunction("createOffer", params);
 
-    const receipt = await hashconnect.sendTransaction(accountId, transaction);
-    return receipt;
+    const contractExecSubmit = await transaction.execute(client);
+    return contractExecSubmit;
   } catch (error) {
     console.error(error);
   }
@@ -191,12 +142,8 @@ export async function createOffer(
 
 export async function acceptOffer(
   offerId: string
-): Promise<TransactionReceipt | undefined> {
-  if (pairingData === null) return;
-
+): Promise<TransactionResponse | undefined> {
   try {
-    let accountId = AccountId.fromString(pairingData!.accountIds[0]);
-
     const params = new ContractFunctionParameters();
     params.addString(offerId);
     let transaction = new ContractExecuteTransaction()
@@ -204,8 +151,8 @@ export async function acceptOffer(
       .setGas(1000000)
       .setFunction("acceptOffer", params);
 
-    const receipt = await hashconnect.sendTransaction(accountId, transaction);
-    return receipt;
+    const contractExecSubmit = await transaction.execute(client);
+    return contractExecSubmit;
   } catch (error) {
     console.error(error);
   }
@@ -213,12 +160,8 @@ export async function acceptOffer(
 
 export async function removeOffer(
   offerId: string
-): Promise<TransactionReceipt | undefined> {
-  if (pairingData === null) return;
-
+): Promise<TransactionResponse | undefined> {
   try {
-    let accountId = AccountId.fromString(pairingData!.accountIds[0]);
-
     const params = new ContractFunctionParameters();
     params.addAddress(offerId);
     let transaction = new ContractExecuteTransaction()
@@ -226,8 +169,8 @@ export async function removeOffer(
       .setGas(1000000)
       .setFunction("removeOffer", params);
 
-    const receipt = await hashconnect.sendTransaction(accountId, transaction);
-    return receipt;
+    const contractExecSubmit = await transaction.execute(client);
+    return contractExecSubmit;
   } catch (error) {
     console.error(error);
   }

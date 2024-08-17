@@ -129,6 +129,7 @@ contract Marketplace {
         int256 _longitude,
         AccountType _accountType
     ) public {
+        
         if (
             _accountType != AccountType.BUYER &&
             _accountType != AccountType.SELLER
