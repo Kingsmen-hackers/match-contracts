@@ -108,9 +108,9 @@ describe("Marketplace Smart Contract Tests", function () {
     // expect(receipt.status).to.equal("SUCCESS");
   });
 
-  // it("should accept an offer", async function () {
-  //   const receipt = await acceptOffer("1"); // Example offer ID
-  //   expect(receipt).to.not.be.null;
-  //   // expect(receipt.status).to.equal("SUCCESS");
-  // });
+  it("should accept an offer", async function () {
+    const receipt = await acceptOffer("1"); // Example offer ID
+    expect(receipt).to.not.be.null;
+    // expect(receipt.status).to.equal("SUCCESS");
+  });
 });
