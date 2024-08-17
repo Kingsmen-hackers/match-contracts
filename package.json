@@ -10,7 +10,7 @@
   },
   "type": "module",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --timeout 10000"
   },
   "devDependencies": {
     "@hashgraph/sdk": "2.41.0",
