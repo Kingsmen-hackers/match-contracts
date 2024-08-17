@@ -13,8 +13,8 @@ import {
 import "dotenv/config";
 
 export enum AccountType {
-  BUYER = "buyer",
-  SELLER = "seller",
+  BUYER,
+  SELLER,
 }
 
 const appMetaData = {
