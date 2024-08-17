@@ -8,7 +8,7 @@
     "hardhat": "^2.22.8"
   },
   "scripts": {
-    "test": "mocha --require ts-node/register test/**/*.test.ts"
+    "test": "mocha"
   },
   "devDependencies": {
     "@hashgraph/sdk": "2.41.0",

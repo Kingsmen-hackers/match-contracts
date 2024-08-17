@@ -1,4 +1,4 @@
-import {
+const {
   AccountId,
   ContractExecuteTransaction,
   ContractFunctionParameters,
@@ -7,15 +7,14 @@ import {
   LedgerId,
   PrivateKey,
   Client,
-  TransactionResponse,
-} from "@hashgraph/sdk";
+} = require("@hashgraph/sdk");
 
-import "dotenv/config";
+require("dotenv").config();
 
-export enum AccountType {
-  BUYER,
-  SELLER,
-}
+const AccountType = {
+  BUYER: 0,
+  SELLER: 1,
+};
 
 const appMetaData = {
   name: "Finder",
@@ -31,26 +30,20 @@ const env = "testnet";
 const PROJECT_ID = "73801621aec60dfaa2197c7640c15858";
 const DEBUG = true;
 
-const operatorId = AccountId.fromString(process.env.OPERATOR_ID!);
-const adminKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY!);
+const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
+const adminKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
 
 const client = Client.forTestnet().setOperator(operatorId, adminKey);
 
-export async function createUser(
-  username: string,
-  phone: string,
-  lat: number,
-  long: number,
-  account_type: AccountType
-): Promise<TransactionResponse | undefined> {
+async function createUser(username, phone, lat, long, account_type) {
   try {
     const params = new ContractFunctionParameters();
-
     params.addString(username);
     params.addString(phone);
     params.addInt256(lat);
     params.addInt256(long);
-    params.addUint8(account_type == AccountType.BUYER ? 0 : 1);
+    params.addUint8(AccountType.BUYER);
+
     let transaction = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(CONTRACT_ID))
       .setGas(1000000)
@@ -63,18 +56,14 @@ export async function createUser(
   }
 }
 
-export async function createStore(
-  name: string,
-  description: string,
-  latitude: number,
-  longitude: number
-): Promise<TransactionResponse | undefined> {
+async function createStore(name, description, latitude, longitude) {
   try {
     const params = new ContractFunctionParameters();
     params.addString(name);
     params.addString(description);
     params.addInt256(latitude);
     params.addInt256(longitude);
+
     let transaction = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(CONTRACT_ID))
       .setGas(1000000)
@@ -87,14 +76,14 @@ export async function createStore(
   }
 }
 
-export async function createRequest(
-  name: string,
-  buyerId: string,
-  description: string,
-  images: string[],
-  latitude: number,
-  longitude: number
-): Promise<TransactionResponse | undefined> {
+async function createRequest(
+  name,
+  buyerId,
+  description,
+  images,
+  latitude,
+  longitude
+) {
   try {
     const params = new ContractFunctionParameters();
     params.addString(name);
@@ -103,10 +92,12 @@ export async function createRequest(
     params.addStringArray(images);
     params.addInt256(latitude);
     params.addInt256(longitude);
+
     let transaction = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(CONTRACT_ID))
       .setGas(1000000)
       .setFunction("createRequest", params);
+
     const contractExecSubmit = await transaction.execute(client);
     return contractExecSubmit;
   } catch (error) {
@@ -114,13 +105,7 @@ export async function createRequest(
   }
 }
 
-export async function createOffer(
-  price: number,
-  images: string[],
-  requestId: string,
-  storeName: string,
-  sellerId: string
-): Promise<TransactionResponse | undefined> {
+async function createOffer(price, images, requestId, storeName, sellerId) {
   try {
     const params = new ContractFunctionParameters();
     params.addInt256(price);
@@ -128,6 +113,7 @@ export async function createOffer(
     params.addString(requestId);
     params.addString(storeName);
     params.addString(sellerId);
+
     let transaction = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(CONTRACT_ID))
       .setGas(1000000)
@@ -140,12 +126,11 @@ export async function createOffer(
   }
 }
 
-export async function acceptOffer(
-  offerId: string
-): Promise<TransactionResponse | undefined> {
+async function acceptOffer(offerId) {
   try {
     const params = new ContractFunctionParameters();
     params.addString(offerId);
+
     let transaction = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(CONTRACT_ID))
       .setGas(1000000)
@@ -158,12 +143,11 @@ export async function acceptOffer(
   }
 }
 
-export async function removeOffer(
-  offerId: string
-): Promise<TransactionResponse | undefined> {
+async function removeOffer(offerId) {
   try {
     const params = new ContractFunctionParameters();
     params.addAddress(offerId);
+
     let transaction = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(CONTRACT_ID))
       .setGas(1000000)
@@ -175,3 +159,13 @@ export async function removeOffer(
     console.error(error);
   }
 }
+
+module.exports = {
+  createUser,
+  createStore,
+  createRequest,
+  createOffer,
+  acceptOffer,
+  removeOffer,
+  AccountType,
+};
