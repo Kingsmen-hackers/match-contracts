@@ -22,15 +22,24 @@ contract Marketplace {
         int256 latitude,
         int256 longitude,
         string[] images,
-        uint8 lifecycle
+        uint8 lifecycle,
+        string description,
+        uint256 buyerId,
+        uint256[] sellerIds,
+        int256 sellersPriceQuote,
+        uint256 lockedSellerId,
+        uint256 createdAt,
+        uint256 updatedAt
     );
+
     event OfferCreated(
         uint256 indexed offerId,
         address indexed sellerAddress,
         string storeName,
         int256 price,
         uint256 requestId,
-        string[] images
+        string[] images,
+        uint256 sellerId
     );
 
     event RequestAccepted(
@@ -221,7 +230,14 @@ contract Marketplace {
             _latitude,
             _longitude,
             _images,
-            uint8(RequestLifecycle.PENDING)
+            uint8(RequestLifecycle.PENDING),
+            _description,
+            users[msg.sender].id,
+            new uint256[](0),
+            0,
+            0,
+            block.timestamp,
+            block.timestamp
         );
     }
 
@@ -262,7 +278,8 @@ contract Marketplace {
             _storeName,
             _price,
             _requestId,
-            _images
+            _images,
+            users[msg.sender].id
         );
     }
 
