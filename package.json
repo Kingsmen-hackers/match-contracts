@@ -8,7 +8,6 @@
     "hardhat": "^2.22.8",
     "ethers": "^6.13.2"
   },
-  "type": "module",
   "scripts": {
     "test": "mocha --timeout 10000"
   },

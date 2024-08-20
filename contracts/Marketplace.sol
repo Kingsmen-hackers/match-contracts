@@ -129,7 +129,6 @@ contract Marketplace {
         int256 _longitude,
         AccountType _accountType
     ) public {
-        
         if (
             _accountType != AccountType.BUYER &&
             _accountType != AccountType.SELLER
@@ -320,5 +319,9 @@ contract Marketplace {
 
         // Emit the event
         emit OfferRemoved(_offerId, msg.sender);
+    }
+
+    function userStoreCount(address user) public view returns (uint256) {
+        return userStoreIds[user].length;
     }
 }
