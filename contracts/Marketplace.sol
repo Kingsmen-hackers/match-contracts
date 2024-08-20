@@ -20,14 +20,17 @@ contract Marketplace {
         address indexed buyerAddress,
         string requestName,
         int256 latitude,
-        int256 longitude
+        int256 longitude,
+        string[] images,
+        uint8 lifecycle
     );
     event OfferCreated(
         uint256 indexed offerId,
         address indexed sellerAddress,
         string storeName,
         int256 price,
-        uint256 requestId
+        uint256 requestId,
+        string[] images
     );
 
     event RequestAccepted(
@@ -103,6 +106,7 @@ contract Marketplace {
 
     // Custom errors with Marketplace__ prefix
     error Marketplace__OnlySellersAllowed();
+    error Marketplace__UnauthorizedBuyer();
     error Marketplace__OnlyBuyersAllowed();
     error Marketplace__OfferAlreadyAccepted();
     error Marketplace__InvalidAccountType();
@@ -215,7 +219,9 @@ contract Marketplace {
             msg.sender,
             _name,
             _latitude,
-            _longitude
+            _longitude,
+            _images,
+            uint8(RequestLifecycle.PENDING)
         );
     }
 
@@ -250,11 +256,27 @@ contract Marketplace {
         offers[offerId] = newOffer;
         buyerOffers[msg.sender][_requestId] = true; // Mark that the buyer has created an offer for this request
 
-        emit OfferCreated(offerId, msg.sender, _storeName, _price, _requestId);
+        emit OfferCreated(
+            offerId,
+            msg.sender,
+            _storeName,
+            _price,
+            _requestId,
+            _images
+        );
     }
 
     function acceptOffer(uint256 _offerId) public {
         Offer storage offer = offers[_offerId];
+
+        if (users[msg.sender].accountType != AccountType.BUYER) {
+            revert Marketplace__OnlyBuyersAllowed();
+        }
+
+        if (requests[offer.requestId].buyerId != users[msg.sender].id) {
+            revert Marketplace__UnauthorizedBuyer();
+        }
+
         if (offer.isAccepted) {
             revert Marketplace__OfferAlreadyAccepted();
         }
@@ -271,7 +293,7 @@ contract Marketplace {
         request.sellerIds.push(offer.sellerId);
         request.lockedSellerId = offer.sellerId;
         request.sellersPriceQuote = offer.price;
-        request.lifecycle = RequestLifecycle.ACCEPTED_BY_SELLER;
+        request.lifecycle = RequestLifecycle.ACCEPTED_BY_BUYER;
         request.updatedAt = block.timestamp;
 
         emit RequestAccepted(request.id, offer.id, offer.sellerId);
