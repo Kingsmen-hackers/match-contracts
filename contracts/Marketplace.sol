@@ -127,7 +127,6 @@ contract Marketplace {
     mapping(address => User) public users;
     mapping(uint256 => Request) public requests;
     mapping(uint256 => Offer) public offers;
-    mapping(address => mapping(uint256 => bool)) public buyerOffers; // Tracks offers created by each buyer for each request
 
     uint256 private _userCounter;
     uint256 private _storeCounter;
@@ -252,10 +251,6 @@ contract Marketplace {
             revert Marketplace__OnlySellersAllowed();
         }
 
-        if (buyerOffers[msg.sender][_requestId]) {
-            revert Marketplace__OfferAlreadyExists();
-        }
-
         _offerCounter++;
         uint256 offerId = _offerCounter;
 
@@ -271,7 +266,6 @@ contract Marketplace {
             block.timestamp
         );
         offers[offerId] = newOffer;
-        buyerOffers[msg.sender][_requestId] = true; // Mark that the buyer has created an offer for this request
 
         emit OfferCreated(
             offerId,
@@ -355,7 +349,6 @@ contract Marketplace {
 
         // Delete the offer
         delete offers[_offerId];
-        buyerOffers[msg.sender][offer.requestId] = false; // Allow buyer to create another offer for the same request
 
         // Emit the event
         emit OfferRemoved(_offerId, msg.sender);
