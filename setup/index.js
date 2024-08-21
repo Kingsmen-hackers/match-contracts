@@ -105,7 +105,7 @@ export async function createOffer(
   images,
   requestId,
   storeName,
-  sellerId
+
 ) {
   try {
     const params = new ContractFunctionParameters();
@@ -113,7 +113,6 @@ export async function createOffer(
     params.addStringArray(images);
     params.addString(requestId);
     params.addString(storeName);
-    params.addString(sellerId);
 
     let transaction = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(CONTRACT_ID))

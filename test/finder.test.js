@@ -43,7 +43,6 @@ describe("Marketplace Smart Contract Tests", function () {
     images: ["offer_img1.jpg", "offer_img2.jpg"],
     requestId: "1",
     storeName: "TestStore",
-    sellerId: "0.0.12345",
   };
 
   it("should create a new buyer account", async function () {
