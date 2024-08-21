@@ -122,6 +122,7 @@ contract Marketplace {
     error Marketplace__OfferAlreadyExists();
     error Marketplace__UnauthorizedRemoval();
     error Marketplace__OfferNotRemovable();
+    error Marketplace__IndexOutOfBounds();
 
     mapping(address => User) public users;
     mapping(uint256 => Request) public requests;
@@ -362,5 +363,53 @@ contract Marketplace {
 
     function userStoreCount(address user) public view returns (uint256) {
         return userStoreIds[user].length;
+    }
+
+    function getRequestImagesLength(
+        uint256 requestId
+    ) public view returns (uint256) {
+        return requests[requestId].images.length;
+    }
+
+    function getRequestImageByIndex(
+        uint256 requestId,
+        uint256 index
+    ) public view returns (string memory) {
+        if (index >= requests[requestId].images.length) {
+            revert Marketplace__IndexOutOfBounds();
+        }
+        return requests[requestId].images[index];
+    }
+
+    function getRequestSellerIdsLength(
+        uint256 requestId
+    ) public view returns (uint256) {
+        return requests[requestId].sellerIds.length;
+    }
+
+    function getRequestSellerIdByIndex(
+        uint256 requestId,
+        uint256 index
+    ) public view returns (uint256) {
+        if (index >= requests[requestId].sellerIds.length) {
+            revert Marketplace__IndexOutOfBounds();
+        }
+        return requests[requestId].sellerIds[index];
+    }
+
+    function getOfferImagesLength(
+        uint256 offerId
+    ) public view returns (uint256) {
+        return offers[offerId].images.length;
+    }
+
+    function getOfferImageByIndex(
+        uint256 offerId,
+        uint256 index
+    ) public view returns (string memory) {
+        if (index >= offers[offerId].images.length) {
+            revert Marketplace__IndexOutOfBounds();
+        }
+        return offers[offerId].images[index];
     }
 }
