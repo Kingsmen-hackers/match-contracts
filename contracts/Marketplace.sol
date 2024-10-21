@@ -185,6 +185,7 @@ contract Marketplace {
     error Marketplace_InvalidUser();
     error Marketplace_UserAlreadyExists();
     error Marketplace__PriceCannotBeZero();
+    error Marketplace__UnknownPaymentType();
 
     mapping(address => User) public users;
     mapping(uint256 => Request) public requests;
@@ -454,7 +455,7 @@ contract Marketplace {
                 revert Marketplace__InsufficientFunds();
             }
         } else {
-            revert Marketplace__InsufficientFunds();
+            revert Marketplace__UnknownPaymentType();
         }
         requestPaymentInfo[paymentId] = newPaymentInfo;
         _requestPaymentCounter++;
@@ -510,7 +511,7 @@ contract Marketplace {
             }
             newPaymentInfo.amount = offer.price;
         } else {
-            revert Marketplace__InsufficientFunds();
+            revert Marketplace__UnknownPaymentType();
         }
         requestPaymentInfo[paymentId] = newPaymentInfo;
         _requestPaymentCounter++;
