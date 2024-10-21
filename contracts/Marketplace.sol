@@ -54,6 +54,8 @@ contract Marketplace {
         uint256 updatedAt
     );
 
+    event RequestDeleted(uint256 indexed requestId);
+
     event OfferCreated(
         uint256 indexed offerId,
         address indexed sellerAddress,
@@ -356,6 +358,8 @@ contract Marketplace {
         }
 
         delete requests[_requestId];
+
+        emit RequestDeleted(_requestId);
     }
 
     function markRequestAsCompleted(uint256 _requestId) public {
@@ -375,6 +379,8 @@ contract Marketplace {
 
         request.lifecycle = RequestLifecycle.COMPLETED;
         request.updatedAt = block.timestamp;
+
+        // emit RequestMarkedAsCompleted(_requestId);
     }
 
     function getAggregatorV3() public view returns (AggregatorV3Interface) {
