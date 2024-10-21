@@ -184,6 +184,7 @@ contract Marketplace {
     error Marketplace__RequestLocked();
     error Marketplace_InvalidUser();
     error Marketplace_UserAlreadyExists();
+    error Marketplace__PriceCannotBeZero();
 
     mapping(address => User) public users;
     mapping(uint256 => Request) public requests;
@@ -532,6 +533,10 @@ contract Marketplace {
     ) public {
         if (users[msg.sender].accountType != AccountType.SELLER) {
             revert Marketplace__OnlySellersAllowed();
+        }
+
+        if (_price == 0) {
+            revert Marketplace__PriceCannotBeZero();
         }
 
         Request storage request = requests[_requestId];
