@@ -9,6 +9,11 @@ interface IERC20 {
         address recipient,
         uint256 amount
     ) external returns (bool);
+
+    function transfer(
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
 }
 
 contract Marketplace {
@@ -390,6 +395,24 @@ contract Marketplace {
 
         request.lifecycle = RequestLifecycle.COMPLETED;
         request.updatedAt = block.timestamp;
+
+        // transfer funds to seller
+        PaymentInfo storage paymentInfo = requestPaymentInfo[
+            _requestPaymentCounter
+        ];
+
+        if (paymentInfo.amount > 0) {
+            if (paymentInfo.token == CoinPayment.USDT) {
+                IERC20 usdt = IERC20(USDT);
+                if (!usdt.transfer(paymentInfo.seller, paymentInfo.amount)) {
+                    revert Marketplace__InsufficientFunds();
+                }
+            } else if (paymentInfo.token == CoinPayment.ETH) {
+                payable(paymentInfo.seller).transfer(paymentInfo.amount);
+            } else {
+                revert Marketplace__UnknownPaymentType();
+            }
+        }
 
         // emit RequestMarkedAsCompleted(_requestId);
     }
