@@ -61,6 +61,8 @@ contract Marketplace {
 
     event RequestDeleted(uint256 indexed requestId);
 
+    event RequestMarkedAsCompleted(uint256 indexed requestId);
+
     event OfferCreated(
         uint256 indexed offerId,
         address indexed sellerAddress,
@@ -192,6 +194,7 @@ contract Marketplace {
     error Marketplace__RequestNotAccepted();
     error Marketplace__RequestAlreadyPaid();
     error Marketplace__RequestNotLocked();
+    error Marketplace__RequestNotPaid();
     error Marketplace__InsufficientFunds();
     error Marketplace__OfferNotRemovable();
     error Marketplace__IndexOutOfBounds();
@@ -384,8 +387,8 @@ contract Marketplace {
             revert Marketplace__UnauthorizedRemoval();
         }
 
-        if (request.lifecycle != RequestLifecycle.ACCEPTED_BY_BUYER) {
-            revert Marketplace__RequestNotAccepted();
+        if (request.lifecycle != RequestLifecycle.PAID) {
+            revert Marketplace__RequestNotPaid();
         }
 
         if (request.updatedAt + TIME_TO_LOCK > block.timestamp) {
@@ -411,7 +414,7 @@ contract Marketplace {
             }
         }
 
-        // emit RequestMarkedAsCompleted(_requestId);
+        emit RequestMarkedAsCompleted(_requestId);
     }
 
     function getAggregatorV3() public view returns (AggregatorV3Interface) {
