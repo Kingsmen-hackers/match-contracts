@@ -210,7 +210,6 @@ contract Marketplace {
     uint256 private _storeCounter;
     uint256 private _requestCounter;
     uint256 private _offerCounter;
-    uint256 private _requestPaymentCounter;
 
     uint256 constant TIME_TO_LOCK = 60;
     address constant USDT = address(0);
@@ -397,9 +396,7 @@ contract Marketplace {
         request.updatedAt = block.timestamp;
 
         // transfer funds to seller
-        PaymentInfo storage paymentInfo = requestPaymentInfo[
-            _requestPaymentCounter
-        ];
+        PaymentInfo storage paymentInfo = requestPaymentInfo[_requestId];
 
         if (paymentInfo.amount > 0) {
             if (paymentInfo.token == CoinPayment.USDT) {
@@ -462,8 +459,6 @@ contract Marketplace {
         request.paid = true;
         request.lifecycle = RequestLifecycle.PAID;
 
-        uint256 paymentId = _requestPaymentCounter;
-
         PaymentInfo memory newPaymentInfo = PaymentInfo(
             msg.sender,
             requestId,
@@ -488,8 +483,7 @@ contract Marketplace {
         } else {
             revert Marketplace__UnknownPaymentType();
         }
-        requestPaymentInfo[paymentId] = newPaymentInfo;
-        _requestPaymentCounter++;
+        requestPaymentInfo[requestId] = newPaymentInfo;
 
         emit RequestPaymentTransacted(
             block.timestamp,
@@ -531,8 +525,6 @@ contract Marketplace {
         request.paid = true;
         request.lifecycle = RequestLifecycle.PAID;
 
-        uint256 paymentId = _requestPaymentCounter;
-
         PaymentInfo memory newPaymentInfo = PaymentInfo(
             msg.sender,
             requestId,
@@ -543,7 +535,6 @@ contract Marketplace {
             block.timestamp,
             block.timestamp
         );
-        requestPaymentInfo[paymentId] = newPaymentInfo;
 
         if (coin == CoinPayment.ETH) {
             if (msg.value < offer.price) {
@@ -553,8 +544,7 @@ contract Marketplace {
         } else {
             revert Marketplace__UnknownPaymentType();
         }
-        requestPaymentInfo[paymentId] = newPaymentInfo;
-        _requestPaymentCounter++;
+        requestPaymentInfo[requestId] = newPaymentInfo;
 
         emit RequestPaymentTransacted(
             block.timestamp,
