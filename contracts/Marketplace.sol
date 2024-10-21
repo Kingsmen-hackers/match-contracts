@@ -75,6 +75,15 @@ contract Marketplace {
         uint256 sellersPriceQuote
     );
 
+    event RequestPaymentTransacted(
+        uint256 timestamp,
+        uint256 amount,
+        uint8 token,
+        uint256 requestId,
+        uint256 sellerId,
+        uint256 buyerId
+    );
+
     event OfferRemoved(uint256 indexed offerId, address indexed sellerAddress);
 
     event LocationEnabled(bool enabled, uint256 userId);
@@ -458,6 +467,15 @@ contract Marketplace {
         }
         requestPaymentInfo[paymentId] = newPaymentInfo;
         _requestPaymentCounter++;
+
+        emit RequestPaymentTransacted(
+            block.timestamp,
+            newPaymentInfo.amount,
+            uint8(coin),
+            requestId,
+            users[offer.authority].id,
+            users[msg.sender].id
+        );
     }
 
     function payForRequest(
@@ -514,6 +532,15 @@ contract Marketplace {
         }
         requestPaymentInfo[paymentId] = newPaymentInfo;
         _requestPaymentCounter++;
+
+        emit RequestPaymentTransacted(
+            block.timestamp,
+            newPaymentInfo.amount,
+            uint8(coin),
+            requestId,
+            users[offer.authority].id,
+            users[msg.sender].id
+        );
     }
 
     function toggleLocation(bool enabled) public {
