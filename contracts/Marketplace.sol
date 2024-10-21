@@ -408,6 +408,9 @@ contract Marketplace {
         Request storage request = requests[requestId];
         Offer storage offer = offers[request.acceptedOfferId];
 
+        if (request.paid) {
+            revert Marketplace__RequestAlreadyPaid();
+        }
         if (request.buyerId != users[msg.sender].id) {
             revert Marketplace__UnauthorizedBuyer();
         }
@@ -422,10 +425,6 @@ contract Marketplace {
 
         if (!offer.isAccepted) {
             revert Marketplace__RequestNotAccepted();
-        }
-
-        if (request.paid) {
-            revert Marketplace__RequestAlreadyPaid();
         }
 
         request.paid = true;
@@ -468,6 +467,10 @@ contract Marketplace {
         Request storage request = requests[requestId];
         Offer storage offer = offers[request.acceptedOfferId];
 
+        if (request.paid) {
+            revert Marketplace__RequestAlreadyPaid();
+        }
+
         if (request.buyerId != users[msg.sender].id) {
             revert Marketplace__UnauthorizedBuyer();
         }
@@ -482,10 +485,6 @@ contract Marketplace {
 
         if (!offer.isAccepted) {
             revert Marketplace__RequestNotAccepted();
-        }
-
-        if (request.paid) {
-            revert Marketplace__RequestAlreadyPaid();
         }
 
         request.paid = true;
