@@ -205,6 +205,7 @@ contract Marketplace {
     error Marketplace__UnknownPaymentType();
 
     mapping(address => User) public users;
+    mapping(uint256 => User) public usersById;
     mapping(uint256 => Request) public requests;
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => PaymentInfo) public requestPaymentInfo;
@@ -251,6 +252,7 @@ contract Marketplace {
             _accountType,
             true
         );
+        usersById[userId] = users[msg.sender];
 
         emit UserCreated(msg.sender, userId, _username, uint8(_accountType));
     }
@@ -274,6 +276,8 @@ contract Marketplace {
         user.location = Location(_latitude, _longitude);
         user.updatedAt = block.timestamp;
         user.accountType = _accountType;
+
+        usersById[user.id] = user;
 
         emit UserUpdated(
             msg.sender,
