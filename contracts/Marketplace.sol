@@ -149,6 +149,7 @@ contract Marketplace {
         uint256 updatedAt;
         AccountType accountType;
         bool location_enabled;
+        address authority;
     }
 
     struct Request {
@@ -250,7 +251,8 @@ contract Marketplace {
             block.timestamp,
             block.timestamp,
             _accountType,
-            true
+            true,
+            msg.sender
         );
         usersById[userId] = users[msg.sender];
 
