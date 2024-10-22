@@ -88,7 +88,9 @@ contract Marketplace {
         uint8 token,
         uint256 requestId,
         uint256 sellerId,
-        uint256 buyerId
+        uint256 buyerId,
+        uint256 createdAt,
+        uint256 updatedAt
     );
 
     event OfferRemoved(uint256 indexed offerId, address indexed sellerAddress);
@@ -500,7 +502,9 @@ contract Marketplace {
             uint8(coin),
             requestId,
             users[offer.authority].id,
-            users[msg.sender].id
+            users[msg.sender].id,
+            block.timestamp,
+            block.timestamp
         );
     }
 
@@ -561,7 +565,9 @@ contract Marketplace {
             uint8(coin),
             requestId,
             users[offer.authority].id,
-            users[msg.sender].id
+            users[msg.sender].id,
+            block.timestamp,
+            block.timestamp
         );
     }
 
