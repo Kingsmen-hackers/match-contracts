@@ -219,7 +219,7 @@ contract Marketplace {
     uint256 private _offerCounter;
 
     uint256 constant TIME_TO_LOCK = 60;
-    address constant USDT_ADDR = address(0);
+    address constant USDC_ADDR = address(0);
 
     function createUser(
         string memory _username,
@@ -411,7 +411,7 @@ contract Marketplace {
 
         if (paymentInfo.amount > 0) {
             if (paymentInfo.token == CoinPayment.USDT) {
-                IERC20 usdt = IERC20(USDT_ADDR);
+                IERC20 usdt = IERC20(USDC_ADDR);
                 if (!usdt.transfer(paymentInfo.seller, paymentInfo.amount)) {
                     revert Marketplace__InsufficientFunds();
                 }
@@ -484,11 +484,11 @@ contract Marketplace {
         if (coin == CoinPayment.USDT) {
             AggregatorV3Interface priceFeed = getAggregatorV3();
             (, int256 price, , , ) = priceFeed.latestRoundData();
-            uint256 usdtAmount = (offer.price * uint256(price)) / 1e8;
-            newPaymentInfo.amount = usdtAmount;
+            uint256 usdcAmount = (offer.price * uint256(price)) / 1e8;
+            newPaymentInfo.amount = usdcAmount;
 
-            IERC20 usdt = IERC20(USDT_ADDR);
-            if (!usdt.transferFrom(msg.sender, address(this), usdtAmount)) {
+            IERC20 usdc = IERC20(USDC_ADDR);
+            if (!usdc.transferFrom(msg.sender, address(this), usdcAmount)) {
                 revert Marketplace__InsufficientFunds();
             }
         } else {
