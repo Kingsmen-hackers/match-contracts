@@ -219,7 +219,8 @@ contract Marketplace {
     uint256 private _offerCounter;
 
     uint256 constant TIME_TO_LOCK = 60;
-    address constant USDC_ADDR = address(0);
+    address constant USDC_ADDR =
+        address(0x0000000000000000000000000000000000068cDa);
 
     function createUser(
         string memory _username,
