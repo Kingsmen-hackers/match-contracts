@@ -419,8 +419,8 @@ contract Marketplace {
 
         if (paymentInfo.amount > 0) {
             if (paymentInfo.token == CoinPayment.USDC) {
-                IERC20 usdt = IERC20(USDC_ADDR);
-                if (!usdt.transfer(paymentInfo.seller, paymentInfo.amount)) {
+                IERC20 usdc = IERC20(USDC_ADDR);
+                if (!usdc.transfer(paymentInfo.seller, paymentInfo.amount)) {
                     revert Marketplace__InsufficientFunds();
                 }
             } else if (paymentInfo.token == CoinPayment.ETH) {
