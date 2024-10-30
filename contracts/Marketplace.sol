@@ -509,7 +509,7 @@ contract Marketplace {
             AggregatorV3Interface priceFeed = getAggregatorV3();
             (, int256 price, , , ) = priceFeed.latestRoundData();
             uint256 usdcAmount = (offer.price * uint256(price)) / 1e10;
-            newPaymentInfo.amount = usdcAmount;
+
             IERC20 usdcErc20 = IERC20(USDC_ADDR);
             uint256 allowance = usdcErc20.allowance(msg.sender, address(this));
             uint256 slippageToleranceBps = 200; // 200 basis points = 2%
@@ -527,6 +527,8 @@ contract Marketplace {
             } else {
                 revert Marketplace__InsufficientAllowance();
             }
+
+            newPaymentInfo.amount = transferAmount;
 
             if (
                 !usdcErc20.transferFrom(
