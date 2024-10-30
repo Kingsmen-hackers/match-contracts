@@ -21,6 +21,13 @@ interface IERC20 {
     ) external view returns (uint256);
 }
 
+interface IHederaTokenService {
+    function associateToken(
+        address account,
+        address token
+    ) external returns (int64);
+}
+
 contract Marketplace {
     event UserCreated(
         address indexed userAddress,
@@ -227,6 +234,22 @@ contract Marketplace {
     uint256 constant TIME_TO_LOCK = 60;
     address constant USDC_ADDR =
         address(0x0000000000000000000000000000000000068cDa);
+    IHederaTokenService private constant hederaTokenService =
+        IHederaTokenService(0x167);
+
+    constructor() {
+        int64 result = hederaTokenService.associateToken(
+            address(this),
+            USDC_ADDR
+        );
+    }
+
+    function associateToken(address tokenAddress) public {
+        int64 result = hederaTokenService.associateToken(
+            address(this),
+            tokenAddress
+        );
+    }
 
     function createUser(
         string memory _username,
