@@ -219,7 +219,7 @@ contract Marketplace {
     uint256 private _offerCounter;
 
     uint256 constant TIME_TO_LOCK = 60;
-    address constant USDT = address(0);
+    address constant USDT_ADDR = address(0);
 
     function createUser(
         string memory _username,
@@ -411,7 +411,7 @@ contract Marketplace {
 
         if (paymentInfo.amount > 0) {
             if (paymentInfo.token == CoinPayment.USDT) {
-                IERC20 usdt = IERC20(USDT);
+                IERC20 usdt = IERC20(USDT_ADDR);
                 if (!usdt.transfer(paymentInfo.seller, paymentInfo.amount)) {
                     revert Marketplace__InsufficientFunds();
                 }
@@ -429,12 +429,12 @@ contract Marketplace {
         if (block.chainid == 1) {
             return
                 AggregatorV3Interface(
-                    0x8A753747A1Fa494EC906cE90E9f37563A8AF630e
+                    0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
                 );
-        } else if (block.chainid == 11155111) {
+        } else if (block.chainid == 11155111 /**TODO: hedera */) {
             return
                 AggregatorV3Interface(
-                    0x694AA1769357215DE4FAC081bf1f309aDC325306
+                    0x59bC155EB6c6C415fE43255aF66EcF0523c92B4a
                 );
         } else {
             revert Marketplace__UnSupportedChainId();
@@ -487,7 +487,7 @@ contract Marketplace {
             uint256 usdtAmount = (offer.price * uint256(price)) / 1e8;
             newPaymentInfo.amount = usdtAmount;
 
-            IERC20 usdt = IERC20(USDT);
+            IERC20 usdt = IERC20(USDT_ADDR);
             if (!usdt.transferFrom(msg.sender, address(this), usdtAmount)) {
                 revert Marketplace__InsufficientFunds();
             }
