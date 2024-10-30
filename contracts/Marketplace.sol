@@ -93,14 +93,6 @@ contract Marketplace {
         uint256 updatedAt
     );
 
-    event HBARToUSD(
-        uint256 timestamp,
-        uint256 usdPrice,
-        uint256 hbarPrice,
-        uint256 createdAt,
-        uint256 updatedAt
-    );
-
     event OfferRemoved(uint256 indexed offerId, address indexed sellerAddress);
 
     event LocationEnabled(bool enabled, uint256 userId);
@@ -447,19 +439,6 @@ contract Marketplace {
         } else {
             revert Marketplace__UnSupportedChainId();
         }
-    }
-
-    function testPriceFeed() public payable {
-        AggregatorV3Interface priceFeed = getAggregatorV3();
-        (, int256 price, , , ) = priceFeed.latestRoundData();
-        uint256 usdcAmount = (msg.value * uint256(price)) / 1e10;
-        emit HBARToUSD(
-            block.timestamp,
-            usdcAmount,
-            msg.value,
-            block.timestamp,
-            block.timestamp
-        );
     }
 
     function payForRequestToken(
