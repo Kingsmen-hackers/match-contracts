@@ -112,7 +112,7 @@ contract Marketplace {
 
     enum CoinPayment {
         ETH,
-        USDT
+        USDC
     }
     enum RequestLifecycle {
         PENDING,
@@ -418,7 +418,7 @@ contract Marketplace {
         PaymentInfo storage paymentInfo = requestPaymentInfo[_requestId];
 
         if (paymentInfo.amount > 0) {
-            if (paymentInfo.token == CoinPayment.USDT) {
+            if (paymentInfo.token == CoinPayment.USDC) {
                 IERC20 usdt = IERC20(USDC_ADDR);
                 if (!usdt.transfer(paymentInfo.seller, paymentInfo.amount)) {
                     revert Marketplace__InsufficientFunds();
@@ -452,7 +452,7 @@ contract Marketplace {
     function testPriceFeed() public payable {
         AggregatorV3Interface priceFeed = getAggregatorV3();
         (, int256 price, , , ) = priceFeed.latestRoundData();
-        uint256 usdcAmount = (msg.value * uint256(price)) / 1e8;
+        uint256 usdcAmount = (msg.value * uint256(price)) / 1e10;
         emit HBARToUSD(
             block.timestamp,
             usdcAmount,
@@ -502,10 +502,10 @@ contract Marketplace {
             block.timestamp
         );
 
-        if (coin == CoinPayment.USDT) {
+        if (coin == CoinPayment.USDC) {
             AggregatorV3Interface priceFeed = getAggregatorV3();
             (, int256 price, , , ) = priceFeed.latestRoundData();
-            uint256 usdcAmount = (offer.price * uint256(price)) / 1e8;
+            uint256 usdcAmount = (offer.price * uint256(price)) / 1e10;
             newPaymentInfo.amount = usdcAmount;
 
             IERC20 usdc = IERC20(USDC_ADDR);
