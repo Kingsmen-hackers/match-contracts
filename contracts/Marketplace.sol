@@ -442,6 +442,23 @@ contract Marketplace {
         }
     }
 
+    function getConversionRate(
+        uint256 requestId,
+        CoinPayment coin
+    ) public view returns (uint256) {
+        Request storage request = requests[requestId];
+        Offer storage offer = offers[request.acceptedOfferId];
+
+        if (coin == CoinPayment.USDC) {
+            AggregatorV3Interface priceFeed = getAggregatorV3();
+            (, int256 price, , , ) = priceFeed.latestRoundData();
+            uint256 usdcAmount = (offer.price * uint256(price)) / 1e10;
+            return usdcAmount;
+        } else {
+            revert Marketplace__UnknownPaymentType();
+        }
+    }
+
     function payForRequestToken(
         uint256 requestId,
         CoinPayment coin
