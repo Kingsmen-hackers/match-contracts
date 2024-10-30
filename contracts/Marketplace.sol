@@ -431,7 +431,7 @@ contract Marketplace {
                 AggregatorV3Interface(
                     0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
                 );
-        } else if (block.chainid == 11155111 /**TODO: hedera */) {
+        } else if (block.chainid == 296) {
             return
                 AggregatorV3Interface(
                     0x59bC155EB6c6C415fE43255aF66EcF0523c92B4a
