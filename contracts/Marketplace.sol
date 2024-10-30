@@ -14,6 +14,11 @@ interface IERC20 {
         address recipient,
         uint256 amount
     ) external returns (bool);
+
+    function allowance(
+        address owner,
+        address spender
+    ) external view returns (uint256);
 }
 
 contract Marketplace {
@@ -196,6 +201,7 @@ contract Marketplace {
     error Marketplace__UnauthorizedRemoval();
     error Marketplace__RequestNotAccepted();
     error Marketplace__RequestAlreadyPaid();
+    error Marketplace__InsufficientAllowance();
     error Marketplace__RequestNotLocked();
     error Marketplace__RequestNotPaid();
     error Marketplace__InsufficientFunds();
@@ -504,9 +510,31 @@ contract Marketplace {
             (, int256 price, , , ) = priceFeed.latestRoundData();
             uint256 usdcAmount = (offer.price * uint256(price)) / 1e10;
             newPaymentInfo.amount = usdcAmount;
+            IERC20 usdcErc20 = IERC20(USDC_ADDR);
+            uint256 allowance = usdcErc20.allowance(msg.sender, address(this));
+            uint256 slippageToleranceBps = 200; // 200 basis points = 2%
 
-            IERC20 usdc = IERC20(USDC_ADDR);
-            if (!usdc.transferFrom(msg.sender, address(this), usdcAmount)) {
+            uint256 minUsdcAmount = (usdcAmount *
+                (10000 - slippageToleranceBps)) / 10000;
+            uint256 maxUsdcAmount = (usdcAmount *
+                (10000 + slippageToleranceBps)) / 10000;
+
+            uint256 transferAmount = 0;
+            if (allowance >= minUsdcAmount && allowance <= maxUsdcAmount) {
+                transferAmount = allowance;
+            } else if (allowance >= usdcAmount) {
+                transferAmount = usdcAmount;
+            } else {
+                revert Marketplace__InsufficientAllowance();
+            }
+
+            if (
+                !usdcErc20.transferFrom(
+                    msg.sender,
+                    address(this),
+                    transferAmount
+                )
+            ) {
                 revert Marketplace__InsufficientFunds();
             }
         } else {
