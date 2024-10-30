@@ -109,6 +109,11 @@ contract Marketplace {
 
     event LocationEnabled(bool enabled, uint256 userId);
 
+    event AssociationSuccessful(
+        address indexed contractAddress,
+        address indexed tokenAddress
+    );
+
     enum AccountType {
         BUYER,
         SELLER
@@ -217,6 +222,7 @@ contract Marketplace {
     error Marketplace__RequestLocked();
     error Marketplace_InvalidUser();
     error Marketplace_UserAlreadyExists();
+    error Marketplace__TokenAssociationFailed();
     error Marketplace__PriceCannotBeZero();
     error Marketplace__UnknownPaymentType();
 
@@ -234,14 +240,12 @@ contract Marketplace {
     uint256 constant TIME_TO_LOCK = 60;
     address constant USDC_ADDR =
         address(0x0000000000000000000000000000000000068cDa);
-    IHederaTokenService private constant hederaTokenService =
-        IHederaTokenService(0x167);
+
+    IHederaTokenService private hederaTokenService =
+        IHederaTokenService(address(0x167));
 
     constructor() {
-        int64 result = hederaTokenService.associateToken(
-            address(this),
-            USDC_ADDR
-        );
+        hederaTokenService.associateToken(address(this), USDC_ADDR);
     }
 
     function associateToken(address tokenAddress) public {
@@ -249,6 +253,12 @@ contract Marketplace {
             address(this),
             tokenAddress
         );
+
+        if (result != 22) {
+            revert Marketplace__TokenAssociationFailed();
+        }
+
+        emit AssociationSuccessful(address(this), tokenAddress);
     }
 
     function createUser(
