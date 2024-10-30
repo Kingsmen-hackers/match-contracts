@@ -111,7 +111,8 @@ contract Marketplace {
 
     event AssociationSuccessful(
         address indexed contractAddress,
-        address indexed tokenAddress
+        address indexed tokenAddress,
+        int64 result
     );
 
     enum AccountType {
@@ -244,21 +245,13 @@ contract Marketplace {
     IHederaTokenService private hederaTokenService =
         IHederaTokenService(address(0x167));
 
-    constructor() {
-        hederaTokenService.associateToken(address(this), USDC_ADDR);
-    }
-
     function associateToken(address tokenAddress) public {
         int64 result = hederaTokenService.associateToken(
             address(this),
             tokenAddress
         );
 
-        if (result != 22) {
-            revert Marketplace__TokenAssociationFailed();
-        }
-
-        emit AssociationSuccessful(address(this), tokenAddress);
+        emit AssociationSuccessful(address(this), tokenAddress, result);
     }
 
     function createUser(
