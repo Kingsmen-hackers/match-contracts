@@ -245,6 +245,9 @@ contract Marketplace {
     IHederaTokenService private hederaTokenService =
         IHederaTokenService(address(0x167));
 
+    AggregatorV3Interface constant HBAR_USD_PRICE_FEED =
+        AggregatorV3Interface(0x59bC155EB6c6C415fE43255aF66EcF0523c92B4a);
+
     function associateToken(address tokenAddress) public {
         int64 result = hederaTokenService.associateToken(
             address(this),
@@ -458,22 +461,6 @@ contract Marketplace {
         emit RequestMarkedAsCompleted(_requestId);
     }
 
-    function getAggregatorV3() public view returns (AggregatorV3Interface) {
-        if (block.chainid == 1) {
-            return
-                AggregatorV3Interface(
-                    0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
-                );
-        } else if (block.chainid == 296) {
-            return
-                AggregatorV3Interface(
-                    0x59bC155EB6c6C415fE43255aF66EcF0523c92B4a
-                );
-        } else {
-            revert Marketplace__UnSupportedChainId();
-        }
-    }
-
     function getConversionRate(
         uint256 requestId,
         CoinPayment coin
@@ -482,8 +469,7 @@ contract Marketplace {
         Offer storage offer = offers[request.acceptedOfferId];
 
         if (coin == CoinPayment.USDC) {
-            AggregatorV3Interface priceFeed = getAggregatorV3();
-            (, int256 price, , , ) = priceFeed.latestRoundData();
+            (, int256 price, , , ) = HBAR_USD_PRICE_FEED.latestRoundData();
             uint256 usdcAmount = (offer.price * uint256(price)) / 1e10;
             return usdcAmount;
         } else {
@@ -532,8 +518,7 @@ contract Marketplace {
         );
 
         if (coin == CoinPayment.USDC) {
-            AggregatorV3Interface priceFeed = getAggregatorV3();
-            (, int256 price, , , ) = priceFeed.latestRoundData();
+            (, int256 price, , , ) = HBAR_USD_PRICE_FEED.latestRoundData();
             uint256 usdcAmount = (offer.price * uint256(price)) / 1e10;
 
             IERC20 usdcErc20 = IERC20(USDC_ADDR);
