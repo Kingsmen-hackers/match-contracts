@@ -93,7 +93,6 @@ contract Marketplace {
         uint256 updatedAt,
         uint256 sellersPriceQuote
     );
-
     event RequestPaymentTransacted(
         uint256 timestamp,
         uint256 amount,
@@ -106,8 +105,6 @@ contract Marketplace {
     );
 
     event OfferRemoved(uint256 indexed offerId, address indexed sellerAddress);
-
-    event LocationEnabled(bool enabled, uint256 userId);
 
     event AssociationSuccessful(
         address indexed contractAddress,
@@ -632,7 +629,6 @@ contract Marketplace {
 
     function toggleLocation(bool enabled) public {
         users[msg.sender].location_enabled = enabled;
-        emit LocationEnabled(enabled, users[msg.sender].id);
     }
 
     function getLocationPreference() public view returns (bool) {
