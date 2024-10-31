@@ -251,6 +251,10 @@ contract Marketplace {
             tokenAddress
         );
 
+        if (result != 22) {
+            revert Marketplace__TokenAssociationFailed();
+        }
+
         emit AssociationSuccessful(address(this), tokenAddress, result);
     }
 
