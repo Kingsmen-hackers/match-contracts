@@ -105,7 +105,6 @@ npx hardhat test
 
 - **Multichain Support**: Expanding the platform to support other blockchain networks.
 - **Token Selection Flexibility**: Allow users to choose from a variety of stablecoins for payment.
-- **Enhanced User Experience**: Implementing a front-end interface for easier interaction.
 
 ## Contributors
 
