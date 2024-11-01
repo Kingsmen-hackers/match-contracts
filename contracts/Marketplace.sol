@@ -223,6 +223,7 @@ contract Marketplace {
     error Marketplace__TokenAssociationFailed();
     error Marketplace__PriceCannotBeZero();
     error Marketplace__UnknownPaymentType();
+    error Marketplace__StoreNeededToCreateOffer();
 
     mapping(address => User) public users;
     mapping(uint256 => User) public usersById;
@@ -651,6 +652,10 @@ contract Marketplace {
 
         if (_price == 0) {
             revert Marketplace__PriceCannotBeZero();
+        }
+
+        if (userStoreCount(msg.sender) == 0) {
+            revert Marketplace__StoreNeededToCreateOffer();
         }
 
         Request storage request = requests[_requestId];
