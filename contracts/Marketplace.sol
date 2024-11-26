@@ -230,13 +230,13 @@ contract Marketplace {
     mapping(uint256 => Request) public requests;
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => PaymentInfo) public requestPaymentInfo;
+    mapping(address => uint256) public balanceOfETH;
+    mapping(address => uint256) public balanceOfUSDC;
 
     uint256 private _userCounter;
     uint256 private _storeCounter;
     uint256 private _requestCounter;
     uint256 private _offerCounter;
-    mapping(address => uint256) public balanceOfETH;
-    mapping(address => uint256) public balanceOfUSDC;
 
     uint256 constant TIME_TO_LOCK = 60;
     address constant USDC_ADDR =
