@@ -33,7 +33,7 @@ const main = async () => {
   const fileAppendTx = await new FileAppendTransaction()
     .setFileId(bytecodeFileId)
     .setContents(bytecode)
-    .setMaxChunks(30)
+    .setMaxChunks(50)
     .execute(client);
   await fileAppendTx.getReceipt(client);
   console.log(`- Content added`);
