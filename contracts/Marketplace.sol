@@ -2,31 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "./interfaces/AggregatorV3Interface.sol";
-
-interface IERC20 {
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    function transfer(
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    function allowance(
-        address owner,
-        address spender
-    ) external view returns (uint256);
-}
-
-interface IHederaTokenService {
-    function associateToken(
-        address account,
-        address token
-    ) external returns (int64);
-}
+import "./interfaces/IHederaTokenService.sol";
+import "./interfaces/IERC20.sol";
 
 contract Marketplace {
     event UserCreated(
