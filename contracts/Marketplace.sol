@@ -235,6 +235,8 @@ contract Marketplace {
     uint256 private _storeCounter;
     uint256 private _requestCounter;
     uint256 private _offerCounter;
+    mapping(address => uint256) public balanceOfETH;
+    mapping(address => uint256) public balanceOfUSDC;
 
     uint256 constant TIME_TO_LOCK = 60;
     address constant USDC_ADDR =
@@ -449,18 +451,41 @@ contract Marketplace {
 
         if (paymentInfo.amount > 0) {
             if (paymentInfo.token == CoinPayment.USDC) {
-                IERC20 usdc = IERC20(USDC_ADDR);
-                if (!usdc.transfer(paymentInfo.seller, paymentInfo.amount)) {
-                    revert Marketplace__InsufficientFunds();
-                }
+                balanceOfUSDC[paymentInfo.seller] += paymentInfo.amount;
             } else if (paymentInfo.token == CoinPayment.ETH) {
-                payable(paymentInfo.seller).transfer(paymentInfo.amount);
+                balanceOfETH[paymentInfo.seller] += paymentInfo.amount;
             } else {
                 revert Marketplace__UnknownPaymentType();
             }
         }
 
         emit RequestMarkedAsCompleted(_requestId);
+    }
+
+    function withdrawSellerProfit(CoinPayment coin) public {
+        if (coin == CoinPayment.ETH) {
+            uint256 amount = balanceOfETH[msg.sender];
+            if (amount == 0) {
+                revert Marketplace__InsufficientFunds();
+            }
+            balanceOfETH[msg.sender] = 0;
+            (bool sent, ) = payable(msg.sender).call{value: amount}("");
+            if (!sent) {
+                revert Marketplace__InsufficientFunds();
+            }
+        } else if (coin == CoinPayment.USDC) {
+            uint256 amount = balanceOfUSDC[msg.sender];
+            if (amount == 0) {
+                revert Marketplace__InsufficientFunds();
+            }
+            balanceOfUSDC[msg.sender] = 0;
+            IERC20 usdc = IERC20(USDC_ADDR);
+            if (!usdc.transfer(msg.sender, amount)) {
+                revert Marketplace__InsufficientFunds();
+            }
+        } else {
+            revert Marketplace__UnknownPaymentType();
+        }
     }
 
     function getConversionRate(
