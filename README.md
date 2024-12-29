@@ -98,7 +98,7 @@ The Marketplace is developed in Solidity, utilizing:
 Run tests to ensure contract functionality:
 
 ```bash
-npx hardhat test
+npm test
 ```
 
 ## Challenges & Future Enhancements
