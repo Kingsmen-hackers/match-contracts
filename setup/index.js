@@ -20,7 +20,7 @@ export const AccountType = {
   SELLER: 1,
 };
 
-const CONTRACT_ID = "0.0.4686833";
+const CONTRACT_ID = "0.0.5173819";
 
 export const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 const adminKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
